@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.1.0-beta](https://github.com/devlooped/dotnet-trx/tree/v0.1.0-beta) (2024-07-02)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.1.0-alpha...v0.1.0-beta)
+
 ## [v0.1.0-alpha](https://github.com/devlooped/dotnet-trx/tree/v0.1.0-alpha) (2024-07-02)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/da76f91bbb92492066d851ef07b833bb6618a8db...v0.1.0-alpha)
