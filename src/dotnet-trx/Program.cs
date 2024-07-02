@@ -1,14 +1,14 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using System.Linq;
-using System.Threading.Tasks;
-using System.Threading;
-using NuGet.Protocol.Core.Types;
-using NuGet.Configuration;
 using System;
-using NuGet.Versioning;
-using Spectre.Console.Cli;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Devlooped;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using Spectre.Console;
+using Spectre.Console.Cli;
 
 var app = new CommandApp<TrxCommand>();
 
