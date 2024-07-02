@@ -13,14 +13,13 @@ Pretty-print test results in TRX format.
 
 ```shell
 USAGE:
-    trx [PATH] [OPTIONS]
-
-ARGUMENTS:
-    [PATH]    Optional base directory for *.trx files discovery. Defaults to current directory
+    trx [OPTIONS]
 
 OPTIONS:
                        DEFAULT
     -h, --help                    Prints help information
+    -p, --path                    Optional base directory for *.trx files discovery. Defaults to current directory
+    -o, --output                  Include test output
     -r, --recursive    True       Recursively search for *.trx files
         --version                 Show version information
 ```
