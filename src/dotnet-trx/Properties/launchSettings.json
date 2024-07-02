@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "dotnet-trx": {
+      "commandName": "Project",
+      "commandLineArgs": "--debug --path ..\\Demo",
+      "workingDirectory": "C:\\Code\\dotnet-trx\\src\\dotnet-trx"
+    }
+  }
+}

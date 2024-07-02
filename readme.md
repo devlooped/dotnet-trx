@@ -9,6 +9,8 @@
 <!-- #content -->
 Pretty-print test results in TRX format.
 
+![Demo](https://github.com/devlooped/dotnet-trx/blob/main/assets/img/demo.png?raw=true)
+
 ```shell
 USAGE:
     trx [PATH] [OPTIONS]

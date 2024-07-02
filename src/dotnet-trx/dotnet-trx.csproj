@@ -11,11 +11,13 @@
     <Description>Pretty-print test results in TRX format</Description>
     <PackageTags>dotnet tests dotnet-tools</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackAsTool>true</PackAsTool>
     <BuildDate>$([System.DateTime]::Now.ToString("yyyy-MM-dd"))</BuildDate>
     <BuildRef>$(GITHUB_REF_NAME)</BuildRef>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NuGetizer" Version="1.2.2" />
     <PackageReference Include="Devlooped.Web" Version="1.2.2" />
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
     <PackageReference Include="NuGet.Protocol" Version="6.10.1" />
