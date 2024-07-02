@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using Devlooped.Web;
 using Humanizer;
 using Spectre.Console;
@@ -55,14 +56,18 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
                         break;
                     case "Failed":
                         MarkupLine($":cross_mark: {test}");
-                        var error = new Panel(
-                            $"""
-                            [red]{result.CssSelectElement("Message")?.Value.Trim()}[/]
-                            [dim]{result.CssSelectElement("StackTrace")?.Value.ReplaceLineEndings()}[/]
-                            """);
-                        error.Padding = new Padding(5, 0, 0, 0);
-                        error.Border = BoxBorder.None;
-                        Write(error);
+                        if (result.CssSelectElement("Message")?.Value is string message &&
+                            result.CssSelectElement("StackTrace")?.Value is string stackTrace)
+                        {
+                            var error = new Panel(
+                                $"""
+                                [red]{message}[/]
+                                [dim]{CleanStackTrace(result, stackTrace.ReplaceLineEndings())}[/]
+                                """);
+                            error.Padding = new Padding(5, 0, 0, 0);
+                            error.Border = BoxBorder.None;
+                            Write(error);
+                        }
                         break;
                     case "NotExecuted":
                         MarkupLine($":fast_forward_button: {test}");
@@ -115,5 +120,23 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
         }
 
         return 0;
+    }
+
+    string CleanStackTrace(XElement result, string stackTrace)
+    {
+        // Stop lines when we find the last one from the test method
+        var testId = result.Attribute("testId")!.Value;
+        var method = result.Document!.CssSelectElement($"UnitTest[id={testId}] TestMethod");
+        if (method == null)
+            return stackTrace;
+
+        var fullName = $"{method.Attribute("className")?.Value}.{method.Attribute("name")?.Value}";
+
+        var lines = stackTrace.Split(Environment.NewLine);
+        var last = Array.FindLastIndex(lines, x => x.Contains(fullName));
+        if (last == -1)
+            return stackTrace;
+
+        return string.Join(Environment.NewLine, lines.Take(last + 1));
     }
 }
