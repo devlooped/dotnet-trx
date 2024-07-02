@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Devlooped.Web;
 using Humanizer;
+using Spectre.Console;
 using Spectre.Console.Cli;
 using static Spectre.Console.AnsiConsole;
 
@@ -17,12 +18,16 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
         [CommandOption("-p|--path")]
         public string? Path { get; init; }
 
-        [Description("Recursively search for *.trx files.")]
+        [Description("Include test output")]
+        [CommandOption("-o|--output")]
+        public bool? Output { get; init; }
+
+        [Description("Recursively search for *.trx files")]
         [CommandOption("-r|--recursive")]
         [DefaultValue(true)]
         public bool Recursive { get; init; } = true;
 
-        [Description("Show version information.")]
+        [Description("Show version information")]
         [CommandOption("--version")]
         public bool? Version { get; init; }
     }
@@ -50,6 +55,14 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
                         break;
                     case "Failed":
                         MarkupLine($":cross_mark: {test}");
+                        var error = new Panel(
+                            $"""
+                            [red]{result.CssSelectElement("Message")?.Value.Trim()}[/]
+                            [dim]{result.CssSelectElement("StackTrace")?.Value.ReplaceLineEndings()}[/]
+                            """);
+                        error.Padding = new Padding(5, 0, 0, 0);
+                        error.Border = BoxBorder.None;
+                        Write(error);
                         break;
                     case "NotExecuted":
                         MarkupLine($":fast_forward_button: {test}");
@@ -58,6 +71,13 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
                     default:
                         break;
                 }
+
+                if (settings.Output == true && result.CssSelectElement("StdOut")?.Value is { } output)
+                    Write(new Panel($"[dim]{output.ReplaceLineEndings()}[/]")
+                    {
+                        Border = BoxBorder.None,
+                        Padding = new Padding(5, 0, 0, 0),
+                    });
             }
 
             var counters = doc.CssSelectElement("ResultSummary > Counters");
@@ -83,13 +103,15 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
                 MarkupLine($" :check_mark_button:");
 
             if (passed > 0)
-                MarkupLine($"  :check_mark_button: {passed} passed");
+                MarkupLine($"   :check_mark_button: {passed} passed");
 
             if (failed > 0)
-                MarkupLine($"  :cross_mark: {failed} failed");
+                MarkupLine($"   :cross_mark: {failed} failed");
 
             if (skipped > 0)
-                MarkupLine($"  :fast_forward_button: {skipped} skipped");
+                MarkupLine($"   :fast_forward_button: {skipped} skipped");
+
+            WriteLine();
         }
 
         return 0;
