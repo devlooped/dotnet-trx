@@ -11,6 +11,8 @@ Pretty-print test results in TRX format.
 
 ![Demo](https://github.com/devlooped/dotnet-trx/blob/main/assets/img/demo.png?raw=true)
 
+Typical usage: `dotnet test --logger trx; trx` (optionally with `--output`).
+
 ```shell
 USAGE:
     trx [OPTIONS]
@@ -19,7 +21,7 @@ OPTIONS:
                        DEFAULT
     -h, --help                    Prints help information
     -p, --path                    Optional base directory for *.trx files discovery. Defaults to current directory
-    -o, --output                  Include test output
+    -o, --output       False      Include test output
     -r, --recursive    True       Recursively search for *.trx files
         --version                 Show version information
 ```

@@ -21,6 +21,7 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
 
         [Description("Include test output")]
         [CommandOption("-o|--output")]
+        [DefaultValue(false)]
         public bool? Output { get; init; }
 
         [Description("Recursively search for *.trx files")]
