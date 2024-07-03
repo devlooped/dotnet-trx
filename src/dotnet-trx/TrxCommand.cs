@@ -84,7 +84,12 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
                         break;
                     case "NotExecuted":
                         skipped++;
-                        MarkupLine($"[dim]:white_question_mark: {test}[/]");
+                        var reason = result.CssSelectElement("Output > ErrorInfo > Message")?.Value;
+                        Markup($"[dim]:white_question_mark: {test}[/]");
+                        if (reason != null)
+                            Markup($"[dim] => {reason}[/]");
+
+                        WriteLine();
                         break;
                     default:
                         break;
