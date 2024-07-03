@@ -126,11 +126,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
         WriteLine();
 
-        var total = passed + failed;
-        if (settings.Skipped == false)
-            total += skipped;
-
-        Markup($":backhand_index_pointing_right: Run {skipped} tests in ~ {duration.Humanize()}");
+        Markup($":backhand_index_pointing_right: Run {passed + failed + skipped} tests in ~ {duration.Humanize()}");
 
         if (failed > 0)
             MarkupLine($" :cross_mark:");
