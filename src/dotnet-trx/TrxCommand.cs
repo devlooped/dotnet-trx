@@ -30,6 +30,14 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
         [DefaultValue(true)]
         public bool Recursive { get; init; } = true;
 
+        /// <summary>
+        /// Whether to include skipped tests in the output.
+        /// </summary>
+        [Description("Include skipped tests")]
+        [CommandOption("--skipped")]
+        [DefaultValue(true)]
+        public bool Skipped { get; init; } = true;
+
         [Description("Show version information")]
         [CommandOption("--version")]
         public bool? Version { get; init; }
@@ -83,6 +91,9 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
                         }
                         break;
                     case "NotExecuted":
+                        if (!settings.Skipped)
+                            break;
+
                         skipped++;
                         var reason = result.CssSelectElement("Output > ErrorInfo > Message")?.Value;
                         Markup($"[dim]:white_question_mark: {test}[/]");
@@ -113,7 +124,12 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
         }
 
         WriteLine();
-        Markup($":backhand_index_pointing_right: Run {passed + failed + skipped} tests in ~ {duration.Humanize()}");
+
+        var total = passed + failed;
+        if (settings.Skipped == false)
+            total += skipped;
+
+        Markup($":backhand_index_pointing_right: Run {skipped} tests in ~ {duration.Humanize()}");
 
         if (failed > 0)
             MarkupLine($" :cross_mark:");
@@ -126,7 +142,7 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
         if (failed > 0)
             MarkupLine($"   :cross_mark: {failed} failed");
 
-        if (skipped > 0)
+        if (settings.Skipped && skipped > 0)
             MarkupLine($"   :white_question_mark: {skipped} skipped");
 
         WriteLine();
