@@ -84,7 +84,7 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
                         break;
                     case "NotExecuted":
                         skipped++;
-                        MarkupLine($":fast_forward_button: [dim]{test}[/]");
+                        MarkupLine($"[dim]:white_question_mark: {test}[/]");
                         break;
                     default:
                         break;
@@ -122,7 +122,7 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
             MarkupLine($"   :cross_mark: {failed} failed");
 
         if (skipped > 0)
-            MarkupLine($"   :fast_forward_button: {skipped} skipped");
+            MarkupLine($"   :white_question_mark: {skipped} skipped");
 
         WriteLine();
 
