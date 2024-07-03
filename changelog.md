@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.2.0](https://github.com/devlooped/dotnet-trx/tree/v0.2.0) (2024-07-03)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.1.0...v0.2.0)
+
+:sparkles: Implemented enhancements:
+
+- Render all results for all files found as a single summary [\#6](https://github.com/devlooped/dotnet-trx/issues/6)
+- Render file links and relative paths [\#10](https://github.com/devlooped/dotnet-trx/pull/10) (@kzu)
+- Add --skipped \(default true\) support [\#9](https://github.com/devlooped/dotnet-trx/pull/9) (@kzu)
+- Render skipped test reason [\#8](https://github.com/devlooped/dotnet-trx/pull/8) (@kzu)
+- Render all results for all files found as a single summary [\#7](https://github.com/devlooped/dotnet-trx/pull/7) (@kzu)
+- Dim skipped tests by default [\#4](https://github.com/devlooped/dotnet-trx/pull/4) (@kzu)
+
 ## [v0.1.0](https://github.com/devlooped/dotnet-trx/tree/v0.1.0) (2024-07-02)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.1.0-beta...v0.1.0)
