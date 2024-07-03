@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Devlooped.Web;
 using Humanizer;
@@ -12,7 +13,7 @@ using static Spectre.Console.AnsiConsole;
 
 namespace Devlooped;
 
-public class TrxCommand : Command<TrxCommand.TrxSettings>
+public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 {
     public class TrxSettings : CommandSettings
     {
@@ -83,7 +84,7 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
                             var error = new Panel(
                                 $"""
                                 [red]{message}[/]
-                                [dim]{CleanStackTrace(result, stackTrace.ReplaceLineEndings())}[/]
+                                [dim]{CleanStackTrace(path, result, stackTrace.ReplaceLineEndings())}[/]
                                 """);
                             error.Padding = new Padding(5, 0, 0, 0);
                             error.Border = BoxBorder.None;
@@ -150,7 +151,7 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
         return 0;
     }
 
-    string CleanStackTrace(XElement result, string stackTrace)
+    string CleanStackTrace(string baseDir, XElement result, string stackTrace)
     {
         // Stop lines when we find the last one from the test method
         var testId = result.Attribute("testId")!.Value;
@@ -160,11 +161,27 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
 
         var fullName = $"{method.Attribute("className")?.Value}.{method.Attribute("name")?.Value}";
 
-        var lines = stackTrace.Split(Environment.NewLine);
+        var lines = stackTrace.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
         var last = Array.FindLastIndex(lines, x => x.Contains(fullName));
         if (last == -1)
             return stackTrace;
 
-        return string.Join(Environment.NewLine, lines.Take(last + 1));
+        return string.Join(Environment.NewLine, lines
+            .Take(last + 1)
+            .Select(line =>
+            {
+                var match = ParseFile().Match(line);
+                if (!match.Success)
+                    return line;
+
+                var file = match.Groups["file"].Value;
+                var relative = Path.GetRelativePath(baseDir, file);
+                line = line.Replace(file, $"[link={file}][steelblue1_1]{relative}[/][/]");
+
+                return line;
+            }));
     }
+
+    [GeneratedRegex(@" in (?<file>.+):line", RegexOptions.Compiled)]
+    private static partial Regex ParseFile();
 }
