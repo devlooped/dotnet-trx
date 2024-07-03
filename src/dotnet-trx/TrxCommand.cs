@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -22,7 +23,7 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
         [Description("Include test output")]
         [CommandOption("-o|--output")]
         [DefaultValue(false)]
-        public bool? Output { get; init; }
+        public bool Output { get; init; }
 
         [Description("Recursively search for *.trx files")]
         [CommandOption("-r|--recursive")]
@@ -38,24 +39,35 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
     {
         var path = settings.Path ?? Directory.GetCurrentDirectory();
         var search = settings.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+        var testIds = new HashSet<string>();
+        var passed = 0;
+        var failed = 0;
+        var skipped = 0;
+        var duration = TimeSpan.Zero;
 
-        foreach (var trx in Directory.EnumerateFiles(path, "*.trx", search))
+        // Process from newest files to oldest
+        foreach (var trx in Directory.EnumerateFiles(path, "*.trx", search).OrderByDescending(File.GetLastWriteTime))
         {
             using var file = File.OpenRead(trx);
-            // This is not counted in the Counters.
-            var skipped = 0;
-
             // Clears namespaces
             var doc = HtmlDocument.Load(file, new HtmlReaderSettings { CaseFolding = Sgml.CaseFolding.None });
+
             foreach (var result in doc.CssSelectElements("UnitTestResult").OrderBy(x => x.Attribute("testName")?.Value))
             {
-                var test = result.Attribute("testName")?.Value;
+                var id = result.Attribute("testId")!.Value;
+                // Process only once per test id, this avoids duplicates when multiple trx files are processed
+                if (!testIds.Add(id))
+                    continue;
+
+                var test = result.Attribute("testName")!.Value;
                 switch (result.Attribute("outcome")?.Value)
                 {
                     case "Passed":
+                        passed++;
                         MarkupLine($":check_mark_button: {test}");
                         break;
                     case "Failed":
+                        failed++;
                         MarkupLine($":cross_mark: {test}");
                         if (result.CssSelectElement("Message")?.Value is string message &&
                             result.CssSelectElement("StackTrace")?.Value is string stackTrace)
@@ -71,8 +83,8 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
                         }
                         break;
                     case "NotExecuted":
-                        MarkupLine($":fast_forward_button: {test}");
                         skipped++;
+                        MarkupLine($":fast_forward_button: [dim]{test}[/]");
                         break;
                     default:
                         break;
@@ -86,39 +98,33 @@ public class TrxCommand : Command<TrxCommand.TrxSettings>
                     });
             }
 
-            var counters = doc.CssSelectElement("ResultSummary > Counters");
             var times = doc.CssSelectElement("Times");
-            if (counters == null || times == null)
+            if (times == null)
                 continue;
 
-            var total = int.Parse(counters.Attribute("total")?.Value ?? "0");
-            var passed = int.Parse(counters.Attribute("passed")?.Value ?? "0");
-            var failed = int.Parse(counters.Attribute("failed")?.Value ?? "0");
-
-            var start = DateTime.Parse(times.Attribute("start")?.Value!);
-            var finish = DateTime.Parse(times.Attribute("finish")?.Value!);
-            var duration = finish - start;
-
-            WriteLine();
-
-            Markup($":backhand_index_pointing_right: Run {total} tests in ~ {duration.Humanize()}");
-
-            if (failed > 0)
-                MarkupLine($" :cross_mark:");
-            else
-                MarkupLine($" :check_mark_button:");
-
-            if (passed > 0)
-                MarkupLine($"   :check_mark_button: {passed} passed");
-
-            if (failed > 0)
-                MarkupLine($"   :cross_mark: {failed} failed");
-
-            if (skipped > 0)
-                MarkupLine($"   :fast_forward_button: {skipped} skipped");
-
-            WriteLine();
+            var start = DateTime.Parse(times.Attribute("start")!.Value);
+            var finish = DateTime.Parse(times.Attribute("finish")!.Value);
+            duration += finish - start;
         }
+
+        WriteLine();
+        Markup($":backhand_index_pointing_right: Run {passed + failed + skipped} tests in ~ {duration.Humanize()}");
+
+        if (failed > 0)
+            MarkupLine($" :cross_mark:");
+        else
+            MarkupLine($" :check_mark_button:");
+
+        if (passed > 0)
+            MarkupLine($"   :check_mark_button: {passed} passed");
+
+        if (failed > 0)
+            MarkupLine($"   :cross_mark: {failed} failed");
+
+        if (skipped > 0)
+            MarkupLine($"   :fast_forward_button: {skipped} skipped");
+
+        WriteLine();
 
         return 0;
     }
