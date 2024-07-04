@@ -18,7 +18,7 @@ if (args.Contains("-?"))
     args = args.Select(x => x == "-?" ? "-h" : x).ToArray();
 
 if (args.Contains("--debug"))
-    Debugger.Break();
+    Debugger.Launch();
 
 app.Configure(config => config.SetApplicationName(ThisAssembly.Project.ToolCommandName));
 
