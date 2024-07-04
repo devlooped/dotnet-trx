@@ -22,6 +22,7 @@ env:
   VersionPrefix: 42.42.${{ github.run_number }}
   VersionLabel: ${{ github.ref }}
   GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  Configuration: Release
   
 defaults:
   run:
@@ -68,7 +69,9 @@ jobs:
           echo 'export PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"' >> .bash_profile
 
       - name: 🧪 test
-        uses: ./.github/workflows/test
+        run: | 
+          dotnet test -l trx src/Demo/ -v:q || echo Nevermind!
+          dotnet run --no-build --project ./src/dotnet-trx/ --path ${{ github.workspace }} --output
 
       - name: 🐛 logs
         uses: actions/upload-artifact@v3
