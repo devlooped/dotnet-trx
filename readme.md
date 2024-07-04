@@ -13,6 +13,22 @@ Pretty-print test results in TRX format.
 
 Typical usage: `dotnet test --logger trx; trx` (optionally with `--output`).
 
+It automatically integrates with GitHub Actions by appending a pull request comment with the results too.
+Set up workflow with:
+
+```yml
+    - name: 🧪 show
+      if: always()
+      run:  
+        dotnet tool update -g dotnet-trx
+        trx --output
+```
+
+And view results in an automatic pull request comment like:
+
+![PR comment](https://raw.githubusercontent.com/devlooped/dotnet-trx/main/assets/img/comment.png)
+
+
 ```shell
 USAGE:
     trx [OPTIONS]
