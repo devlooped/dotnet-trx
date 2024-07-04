@@ -28,6 +28,7 @@ And view results in an automatic pull request comment like:
 
 ![PR comment](https://raw.githubusercontent.com/devlooped/dotnet-trx/main/assets/img/comment.png)
 
+> NOTE: this behavior is triggered by the presence of the `GITHUB_REF_NAME` and `CI` environment variables.
 
 ```shell
 USAGE:
