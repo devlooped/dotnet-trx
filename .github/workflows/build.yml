@@ -69,8 +69,12 @@ jobs:
           echo 'export PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"' >> .bash_profile
 
       - name: 🧪 test
-        run: | 
-          dotnet test -l trx src/Demo/ -v:q || echo Nevermind!
+        # NOTE: we don't really want to fail since this just emits the trx. '
+        run: dotnet test -l trx src/Demo/ -v:q || echo Nevermind!
+
+      - name: 🧪 show
+        if: always()
+        run:  
           dotnet run --no-build --project ./src/dotnet-trx/ --output
 
       - name: 🐛 logs
