@@ -1,5 +1,20 @@
 # Changelog
 
+## [v0.3.0](https://github.com/devlooped/dotnet-trx/tree/v0.3.0) (2024-07-04)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.2.0...v0.3.0)
+
+:sparkles: Implemented enhancements:
+
+- Add --no-skip to avoid rendering skipped tests? [\#3](https://github.com/devlooped/dotnet-trx/issues/3)
+- Render badges in GH using shields.io [\#13](https://github.com/devlooped/dotnet-trx/pull/13) (@kzu)
+- Sort test results by name, improve duration calculation [\#12](https://github.com/devlooped/dotnet-trx/pull/12) (@kzu)
+- Add support for reporting to github [\#11](https://github.com/devlooped/dotnet-trx/pull/11) (@kzu)
+
+:hammer: Other:
+
+- If there are multiple trx files, only render the results for the newest one for a given assembly [\#2](https://github.com/devlooped/dotnet-trx/issues/2)
+
 ## [v0.2.0](https://github.com/devlooped/dotnet-trx/tree/v0.2.0) (2024-07-03)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.1.0...v0.2.0)
