@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Devlooped.Web;
 using Humanizer;
@@ -53,7 +54,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             path = Path.Combine(Directory.GetCurrentDirectory(), path);
 
         if (File.Exists(path))
-            path = new FileInfo(path).DirectoryName;
+            path = new FileInfo(path).DirectoryName!;
         else
             path = Path.GetFullPath(path);
 
@@ -74,99 +75,105 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
             """);
 
-        // Process from newest files to oldest
-        foreach (var trx in Directory.EnumerateFiles(path, "*.trx", search).OrderByDescending(File.GetLastWriteTime))
+        var results = new List<XElement>();
+
+        Status().Start("Discovering test results...", ctx =>
         {
-            using var file = File.OpenRead(trx);
-            // Clears namespaces
-            var doc = HtmlDocument.Load(file, new HtmlReaderSettings { CaseFolding = Sgml.CaseFolding.None });
-
-            foreach (var result in doc.CssSelectElements("UnitTestResult").OrderBy(x => x.Attribute("testName")?.Value))
+            // Process from newest files to oldest so that newest result we find (by test id) is the one we keep
+            foreach (var trx in Directory.EnumerateFiles(path, "*.trx", search).OrderByDescending(File.GetLastWriteTime))
             {
-                var id = result.Attribute("testId")!.Value;
-                // Process only once per test id, this avoids duplicates when multiple trx files are processed
-                if (!testIds.Add(id))
-                    continue;
-
-                var test = result.Attribute("testName")!.Value;
-                string? output = settings.Output ? result.CssSelectElement("StdOut")?.Value : default;
-
-                switch (result.Attribute("outcome")?.Value)
+                ctx.Status($"Discovering test results in {Path.GetFileName(trx)}...");
+                using var file = File.OpenRead(trx);
+                // Clears namespaces
+                var doc = HtmlDocument.Load(file, new HtmlReaderSettings { CaseFolding = Sgml.CaseFolding.None });
+                foreach (var result in doc.CssSelectElements("UnitTestResult"))
                 {
-                    case "Passed":
-                        passed++;
-                        MarkupLine($":check_mark_button: {test}");
-                        if (output == null)
-                            details.AppendLine($":white_check_mark: {test}");
-                        else
-                            details.AppendLine(
-                                $"""
+                    var id = result.Attribute("testId")!.Value;
+                    // Process only once per test id, this avoids duplicates when multiple trx files are processed
+                    if (testIds.Add(id))
+                        results.Add(result);
+                }
+            }
+
+            ctx.Status("Sorting tests by name...");
+            results.Sort(new Comparison<XElement>((x, y) => x.Attribute("testName")!.Value.CompareTo(y.Attribute("testName")!.Value)));
+        });
+
+        foreach (var result in results)
+        {
+            var test = result.Attribute("testName")!.Value;
+            var elapsed = TimeSpan.Parse(result.Attribute("duration")!.Value);
+            var output = settings.Output ? result.CssSelectElement("StdOut")?.Value : default;
+
+            switch (result.Attribute("outcome")?.Value)
+            {
+                case "Passed":
+                    passed++;
+                    duration += elapsed;
+                    MarkupLine($":check_mark_button: {test}");
+                    if (output == null)
+                        details.AppendLine($":white_check_mark: {test}");
+                    else
+                        details.AppendLine(
+                            $"""
                                 <details>
 
                                 <summary>:white_check_mark: {test}</summary>
 
                                 """)
-                                .AppendLineIndented(output, "> &gt; ")
-                                .AppendLine(
-                                """
+                            .AppendLineIndented(output, "> &gt; ")
+                            .AppendLine(
+                            """
 
                                 </details>
                                 """);
-                        break;
-                    case "Failed":
-                        failed++;
-                        MarkupLine($":cross_mark: {test}");
-                        details.AppendLine(
-                            $"""
+                    break;
+                case "Failed":
+                    failed++;
+                    duration += elapsed;
+                    MarkupLine($":cross_mark: {test}");
+                    details.AppendLine(
+                        $"""
                             <details>
 
                             <summary>:x: {test}</summary>
             
                             """);
-                        WriteError(path, failures, result, details);
-                        if (output != null)
-                            details.AppendLineIndented(output, "> &gt; ");
-                        details.AppendLine().AppendLine("</details>").AppendLine();
+                    WriteError(path, failures, result, details);
+                    if (output != null)
+                        details.AppendLineIndented(output, "> &gt; ");
+                    details.AppendLine().AppendLine("</details>").AppendLine();
+                    break;
+                case "NotExecuted":
+                    if (!settings.Skipped)
                         break;
-                    case "NotExecuted":
-                        if (!settings.Skipped)
-                            break;
 
-                        skipped++;
-                        var reason = result.CssSelectElement("Output > ErrorInfo > Message")?.Value;
-                        Markup($"[dim]:white_question_mark: {test}[/]");
-                        details.Append($":grey_question: {test}");
+                    skipped++;
+                    var reason = result.CssSelectElement("Output > ErrorInfo > Message")?.Value;
+                    Markup($"[dim]:white_question_mark: {test}[/]");
+                    details.Append($":grey_question: {test}");
 
-                        if (reason != null)
-                        {
-                            Markup($"[dim] => {reason}[/]");
-                            details.Append($" => {reason}");
-                        }
-
-                        WriteLine();
-                        details.AppendLine();
-                        break;
-                    default:
-                        break;
-                }
-
-                if (output != null)
-                {
-                    Write(new Panel($"[dim]{output.ReplaceLineEndings()}[/]")
+                    if (reason != null)
                     {
-                        Border = BoxBorder.None,
-                        Padding = new Padding(5, 0, 0, 0),
-                    });
-                }
+                        Markup($"[dim] => {reason}[/]");
+                        details.Append($" => {reason}");
+                    }
+
+                    WriteLine();
+                    details.AppendLine();
+                    break;
+                default:
+                    break;
             }
 
-            var times = doc.CssSelectElement("Times");
-            if (times == null)
-                continue;
-
-            var start = DateTime.Parse(times.Attribute("start")!.Value);
-            var finish = DateTime.Parse(times.Attribute("finish")!.Value);
-            duration += finish - start;
+            if (output != null)
+            {
+                Write(new Panel($"[dim]{output.ReplaceLineEndings()}[/]")
+                {
+                    Border = BoxBorder.None,
+                    Padding = new Padding(5, 0, 0, 0),
+                });
+            }
         }
 
         details.AppendLine().AppendLine("</details>");
@@ -175,13 +182,16 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         WriteLine();
         MarkupSummary(summary);
         WriteLine();
-        GitHubReport(summary, details);
 
-        if (failures.Count > 0 && Environment.GetEnvironmentVariable("CI") == "true")
+        if (Environment.GetEnvironmentVariable("CI") == "true")
         {
-            // Send workflow commands for each failure to be annotated in GH CI
-            foreach (var failure in failures)
-                WriteLine($"::error file={failure.File},line={failure.Line},title={failure.Message}::{failure.Message}");
+            GitHubReport(summary, details);
+            if (failures.Count > 0 && Environment.GetEnvironmentVariable("CI") == "true")
+            {
+                // Send workflow commands for each failure to be annotated in GH CI
+                foreach (var failure in failures)
+                    WriteLine($"::error file={failure.File},line={failure.Line},title={failure.Message}::{failure.Message}");
+            }
         }
 
         return 0;
@@ -231,8 +241,11 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             sb.AppendLine($"&nbsp;&nbsp;&nbsp;&nbsp; :grey_question: {summary.Skipped} skipped");
 
         sb.AppendLine();
-        sb.Append(details);
-        sb.AppendLine();
+        if (summary.Total > 0)
+        {
+            sb.Append(details);
+            sb.AppendLine();
+        }
 
         sb.AppendLine(
             $"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) with [:purple_heart:](https://github.com/sponsors/devlooped)");
