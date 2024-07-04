@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -7,10 +7,10 @@ namespace Demo;
 public class Tests(ITestOutputHelper output)
 {
     [Fact]
-    public void ICanHasOutput() => output.WriteLine("Hello, world from xunit ITestOutputHelper!");
+    public void Test_With_Output() => output.WriteLine("Hello, world from xunit ITestOutputHelper!");
 
     [Fact(Skip = "Shouldn't run for now :)")]
-    public void SampleSkipped() { }
+    public void Skipped_Test_Does_Not_Run() { }
 
     [Theory]
     [InlineData("en")]
@@ -22,10 +22,16 @@ public class Tests(ITestOutputHelper output)
 #pragma warning restore xUnit1026 // Theory methods should use all of their parameters
 
     [Fact]
-    public void OhNoh() => Assert.Equal(42, 22);
+    public void Fails_With_Output()
+    {
+        output.WriteLine("It was going so well... ");
+        output.WriteLine("Yet you never know");
+        output.WriteLine("Which is why you sprinkle all these WriteLines :eyes:");
+        Assert.Equal(42, 22);
+    }
 
     [Fact]
-    public void CleanStackTrace()
+    public void Fails_With_Complex_StackTrace()
     {
         Action runner = () => Run();
 

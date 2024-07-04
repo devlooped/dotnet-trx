@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Devlooped.Web;
 using Humanizer;
+using Newtonsoft.Json.Linq;
+using NuGet.Protocol.Plugins;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using static Devlooped.Process;
 using static Spectre.Console.AnsiConsole;
 
 namespace Devlooped;
@@ -53,6 +57,16 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         var failed = 0;
         var skipped = 0;
         var duration = TimeSpan.Zero;
+        var failures = new List<Failed>();
+
+        // markdown details for gh comment
+        var details = new StringBuilder().AppendLine(
+            """
+            <details>
+
+            <summary>:test_tube: Details</summary>
+
+            """);
 
         // Process from newest files to oldest
         foreach (var trx in Directory.EnumerateFiles(path, "*.trx", search).OrderByDescending(File.GetLastWriteTime))
@@ -69,27 +83,44 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
                     continue;
 
                 var test = result.Attribute("testName")!.Value;
+                string? output = settings.Output ? result.CssSelectElement("StdOut")?.Value : default;
+
                 switch (result.Attribute("outcome")?.Value)
                 {
                     case "Passed":
                         passed++;
                         MarkupLine($":check_mark_button: {test}");
+                        if (output == null)
+                            details.AppendLine($":white_check_mark: {test}");
+                        else
+                            details.AppendLine(
+                                $"""
+                                <details>
+
+                                <summary>:white_check_mark: {test}</summary>
+
+                                """)
+                                .AppendLineIndented(output, "> &gt; ")
+                                .AppendLine(
+                                """
+
+                                </details>
+                                """);
                         break;
                     case "Failed":
                         failed++;
                         MarkupLine($":cross_mark: {test}");
-                        if (result.CssSelectElement("Message")?.Value is string message &&
-                            result.CssSelectElement("StackTrace")?.Value is string stackTrace)
-                        {
-                            var error = new Panel(
-                                $"""
-                                [red]{message}[/]
-                                [dim]{CleanStackTrace(path, result, stackTrace.ReplaceLineEndings())}[/]
-                                """);
-                            error.Padding = new Padding(5, 0, 0, 0);
-                            error.Border = BoxBorder.None;
-                            Write(error);
-                        }
+                        details.AppendLine(
+                            $"""
+                            <details>
+
+                            <summary>:x: {test}</summary>
+            
+                            """);
+                        WriteError(path, failures, result, details);
+                        if (output != null)
+                            details.AppendLineIndented(output, "> &gt; ");
+                        details.AppendLine().AppendLine("</details>").AppendLine();
                         break;
                     case "NotExecuted":
                         if (!settings.Skipped)
@@ -98,21 +129,29 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
                         skipped++;
                         var reason = result.CssSelectElement("Output > ErrorInfo > Message")?.Value;
                         Markup($"[dim]:white_question_mark: {test}[/]");
+                        details.Append($":grey_question: {test}");
+
                         if (reason != null)
+                        {
                             Markup($"[dim] => {reason}[/]");
+                            details.Append($" => {reason}");
+                        }
 
                         WriteLine();
+                        details.AppendLine();
                         break;
                     default:
                         break;
                 }
 
-                if (settings.Output == true && result.CssSelectElement("StdOut")?.Value is { } output)
+                if (output != null)
+                {
                     Write(new Panel($"[dim]{output.ReplaceLineEndings()}[/]")
                     {
                         Border = BoxBorder.None,
                         Padding = new Padding(5, 0, 0, 0),
                     });
+                }
             }
 
             var times = doc.CssSelectElement("Times");
@@ -124,60 +163,154 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             duration += finish - start;
         }
 
+        details.AppendLine().AppendLine("</details>");
+
+        var summary = new Summary(passed, failed, skipped, duration);
         WriteLine();
-
-        Markup($":backhand_index_pointing_right: Run {passed + failed + skipped} tests in ~ {duration.Humanize()}");
-
-        if (failed > 0)
-            MarkupLine($" :cross_mark:");
-        else
-            MarkupLine($" :check_mark_button:");
-
-        if (passed > 0)
-            MarkupLine($"   :check_mark_button: {passed} passed");
-
-        if (failed > 0)
-            MarkupLine($"   :cross_mark: {failed} failed");
-
-        if (settings.Skipped && skipped > 0)
-            MarkupLine($"   :white_question_mark: {skipped} skipped");
-
+        MarkupSummary(summary);
         WriteLine();
+        GitHubReport(summary, details);
+
+        if (failures.Count > 0 && Environment.GetEnvironmentVariable("CI") == "true")
+        {
+            // Send workflow commands for each failure to be annotated in GH CI
+            foreach (var failure in failures)
+                WriteLine($"::error file={failure.File},line={failure.Line},title={failure.Message}::{failure.Message}");
+        }
 
         return 0;
     }
 
-    string CleanStackTrace(string baseDir, XElement result, string stackTrace)
+    static void MarkupSummary(Summary summary)
     {
-        // Stop lines when we find the last one from the test method
-        var testId = result.Attribute("testId")!.Value;
-        var method = result.Document!.CssSelectElement($"UnitTest[id={testId}] TestMethod");
-        if (method == null)
-            return stackTrace;
+        Markup($":backhand_index_pointing_right: Run {summary.Total} tests in ~ {summary.Duration.Humanize()}");
 
-        var fullName = $"{method.Attribute("className")?.Value}.{method.Attribute("name")?.Value}";
+        if (summary.Failed > 0)
+            MarkupLine($" :cross_mark:");
+        else
+            MarkupLine($" :check_mark_button:");
 
-        var lines = stackTrace.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-        var last = Array.FindLastIndex(lines, x => x.Contains(fullName));
-        if (last == -1)
-            return stackTrace;
+        if (summary.Passed > 0)
+            MarkupLine($"   :check_mark_button: {summary.Passed} passed");
 
-        return string.Join(Environment.NewLine, lines
-            .Take(last + 1)
-            .Select(line =>
-            {
-                var match = ParseFile().Match(line);
-                if (!match.Success)
-                    return line;
+        if (summary.Failed > 0)
+            MarkupLine($"   :cross_mark: {summary.Failed} failed");
 
-                var file = match.Groups["file"].Value;
-                var relative = Path.GetRelativePath(baseDir, file);
-                line = line.Replace(file, $"[link={file}][steelblue1_1]{relative}[/][/]");
-
-                return line;
-            }));
+        if (summary.Skipped > 0)
+            MarkupLine($"   :white_question_mark: {summary.Skipped} skipped");
     }
 
-    [GeneratedRegex(@" in (?<file>.+):line", RegexOptions.Compiled)]
+    static void GitHubReport(Summary summary, StringBuilder details)
+    {
+        if (TryExecute("gh", "--version", out var output) && output?.StartsWith("gh version") != true)
+            return;
+
+        // See https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables 
+        if (Environment.GetEnvironmentVariable("GITHUB_REF_NAME") is not { } branch ||
+            !branch.EndsWith("/merge") ||
+            !int.TryParse(branch[..^6], out var pr))
+            return;
+
+        var sb = new StringBuilder()
+            .AppendLine(
+                $"""
+                 :point_right: Run {summary.Total} tests in ~ {summary.Duration.Humanize()} 
+                """);
+
+        if (summary.Passed > 0)
+            sb.AppendLine($"&nbsp;&nbsp;&nbsp;&nbsp; :white_check_mark: {summary.Passed} passed");
+        if (summary.Failed > 0)
+            sb.AppendLine($"&nbsp;&nbsp;&nbsp;&nbsp; :x: {summary.Failed} failed");
+        if (summary.Skipped > 0)
+            sb.AppendLine($"&nbsp;&nbsp;&nbsp;&nbsp; :grey_question: {summary.Skipped} skipped");
+
+        sb.AppendLine();
+        sb.Append(details);
+        sb.AppendLine();
+
+        sb.AppendLine(
+            $"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) with [:purple_heart:](https://github.com/sponsors/devlooped)");
+
+        if (TryExecute("gh", $"pr comment {pr} --body-file -", sb.ToString(), out var link))
+            WriteLine($"::notice title=Added summary as [pull-request comment]({link})");
+    }
+
+    void WriteError(string baseDir, List<Failed> failures, XElement result, StringBuilder details)
+    {
+        if (result.CssSelectElement("Message")?.Value is not string message ||
+            result.CssSelectElement("StackTrace")?.Value is not string stackTrace)
+            return;
+
+        var testName = result.Attribute("testName")!.Value;
+        var testId = result.Attribute("testId")!.Value;
+        var method = result.Document!.CssSelectElement($"UnitTest[id={testId}] TestMethod");
+        var lines = stackTrace.ReplaceLineEndings().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+        if (method != null)
+        {
+            var fullName = $"{method.Attribute("className")?.Value}.{method.Attribute("name")?.Value}";
+            var last = Array.FindLastIndex(lines, x => x.Contains(fullName));
+            // Stop lines when we find the last one from the test method
+            if (last != -1)
+                lines = lines[..(last + 1)];
+        }
+
+        Failed? failed = null;
+        var cli = new StringBuilder();
+        details.Append("> ```");
+        if (stackTrace.Contains(".vb:line"))
+            details.AppendLine("vb");
+        else
+            details.AppendLine("csharp");
+
+        foreach (var line in lines)
+        {
+            var match = ParseFile().Match(line);
+            if (!match.Success)
+            {
+                cli.AppendLine(line);
+                details.AppendLineIndented(line, "> ");
+                continue;
+            }
+
+            var file = match.Groups["file"].Value;
+            var pos = match.Groups["line"].Value;
+            var relative = Path.GetRelativePath(baseDir, file);
+            // NOTE: we replace whichever was last, since we want the annotation on the 
+            // last one with a filename, which will be the test itself (see previous skip from last found).
+            failed = new Failed(testName, message, relative, int.Parse(pos));
+
+            cli.AppendLine(line.Replace(file, $"[link={file}][steelblue1_1]{relative}[/][/]"));
+            // TODO: can we render a useful link in comment details?
+            details.AppendLineIndented(line.Replace(file, relative), "> ");
+        }
+
+        var error = new Panel(
+            $"""
+            [red]{message}[/]
+            [dim]{cli}[/]
+            """);
+        error.Padding = new Padding(5, 0, 0, 0);
+        error.Border = BoxBorder.None;
+        Write(error);
+
+        // Use a blockquote for the entire error message
+
+        details.AppendLine("> ```");
+
+        // Add to collected failures we may report to GH CI
+        if (failed != null)
+            failures.Add(failed);
+    }
+
+    // in C:\path\to\file.cs:line 123
+    [GeneratedRegex(@" in (?<file>.+):line (?<line>\d+)", RegexOptions.Compiled)]
     private static partial Regex ParseFile();
+
+    record Summary(int Passed, int Failed, int Skipped, TimeSpan Duration)
+    {
+        public int Total => Passed + Failed + Skipped;
+    }
+
+    record Failed(string Test, string Message, string File, int Line);
 }
