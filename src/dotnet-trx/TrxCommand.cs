@@ -230,17 +230,19 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         var sb = new StringBuilder()
             .AppendLine(
                 $"""
-                 :point_right: Run {summary.Total} tests in ~ {summary.Duration.Humanize()} 
+                 :point_right: Run {summary.Total} tests in ~ {summary.Duration.Humanize()}: 
+
                 """);
 
         if (summary.Passed > 0)
-            sb.AppendLine($"&nbsp;&nbsp;&nbsp;&nbsp; :white_check_mark: {summary.Passed} passed");
+            sb.Append($"![{summary.Passed} passed](https://img.shields.io/badge/passed-{summary.Passed}-brightgreen) ");
         if (summary.Failed > 0)
-            sb.AppendLine($"&nbsp;&nbsp;&nbsp;&nbsp; :x: {summary.Failed} failed");
+            sb.Append($"![{summary.Failed} failed](https://img.shields.io/badge/failed-{summary.Failed}-red) ");
         if (summary.Skipped > 0)
-            sb.AppendLine($"&nbsp;&nbsp;&nbsp;&nbsp; :grey_question: {summary.Skipped} skipped");
+            sb.Append($"![{summary.Skipped} skipped](https://img.shields.io/badge/skipped-{summary.Skipped}-silver) ");
 
         sb.AppendLine();
+
         if (summary.Total > 0)
         {
             sb.Append(details);
