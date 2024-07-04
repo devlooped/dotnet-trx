@@ -71,7 +71,7 @@ jobs:
       - name: 🧪 test
         run: | 
           dotnet test -l trx src/Demo/ -v:q || echo Nevermind!
-          dotnet run --no-build --project ./src/dotnet-trx/ --path ${{ github.workspace }} --output
+          dotnet run --no-build --project ./src/dotnet-trx/ --output
 
       - name: 🐛 logs
         uses: actions/upload-artifact@v3

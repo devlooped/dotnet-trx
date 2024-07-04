@@ -8,8 +8,6 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Devlooped.Web;
 using Humanizer;
-using Newtonsoft.Json.Linq;
-using NuGet.Protocol.Plugins;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using static Devlooped.Process;
@@ -51,6 +49,14 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
     public override int Execute(CommandContext context, TrxSettings settings)
     {
         var path = settings.Path ?? Directory.GetCurrentDirectory();
+        if (!Path.IsPathFullyQualified(path))
+            path = Path.Combine(Directory.GetCurrentDirectory(), path);
+
+        if (File.Exists(path))
+            path = new FileInfo(path).DirectoryName;
+        else
+            path = Path.GetFullPath(path);
+
         var search = settings.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
         var testIds = new HashSet<string>();
         var passed = 0;
@@ -275,7 +281,10 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
             var file = match.Groups["file"].Value;
             var pos = match.Groups["line"].Value;
-            var relative = Path.GetRelativePath(baseDir, file);
+            var relative = file;
+            if (Path.IsPathRooted(file) && file.StartsWith(baseDir))
+                relative = file[baseDir.Length..].TrimStart(Path.DirectorySeparatorChar);
+
             // NOTE: we replace whichever was last, since we want the annotation on the 
             // last one with a filename, which will be the test itself (see previous skip from last found).
             failed = new Failed(testName, message, relative, int.Parse(pos));
