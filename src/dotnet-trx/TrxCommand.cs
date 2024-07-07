@@ -250,6 +250,11 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             sb.AppendLine();
         }
 
+        var os = RuntimeInformation.OSDescription;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            // Otherwise we end up with this, yuck: Darwin 23.5.0 Darwin Kernel Version 23.5.0: Wed May 1 20:12:39 PDT 2024; root:xnu-10063.121.3~5/RELEASE_ARM64_VMAPPLE
+            os = $"macOS {Environment.OSVersion.VersionString}";
+
         sb.AppendLine(
             $"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) with [:purple_heart:](https://github.com/sponsors/devlooped) via {RuntimeInformation.FrameworkDescription} on {RuntimeInformation.OSDescription}");
 
