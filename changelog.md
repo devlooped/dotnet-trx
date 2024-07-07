@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.3.1](https://github.com/devlooped/dotnet-trx/tree/v0.3.1) (2024-07-07)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.3.0...v0.3.1)
+
+:sparkles: Implemented enhancements:
+
+- Add runtime information to GH message [\#16](https://github.com/devlooped/dotnet-trx/pull/16) (@kzu)
+
 ## [v0.3.0](https://github.com/devlooped/dotnet-trx/tree/v0.3.0) (2024-07-04)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.2.0...v0.3.0)
