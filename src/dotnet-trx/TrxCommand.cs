@@ -256,7 +256,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             os = $"macOS {Environment.OSVersion.VersionString}";
 
         sb.AppendLine(
-            $"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) with [:purple_heart:](https://github.com/sponsors/devlooped) via {RuntimeInformation.FrameworkDescription} on {RuntimeInformation.OSDescription}");
+            $"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) with [:purple_heart:](https://github.com/sponsors/devlooped) via {RuntimeInformation.FrameworkDescription} on {os}");
 
         if (TryExecute("gh", $"pr comment {pr} --body-file -", sb.ToString(), out var link))
             WriteLine($"::notice title=Added summary as [pull-request comment]({link})");
