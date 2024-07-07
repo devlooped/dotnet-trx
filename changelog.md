@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.3.2](https://github.com/devlooped/dotnet-trx/tree/v0.3.2) (2024-07-07)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.3.1...v0.3.2)
+
+:sparkles: Implemented enhancements:
+
+- Make macOS version description more palatable [\#17](https://github.com/devlooped/dotnet-trx/pull/17) (@kzu)
+
 ## [v0.3.1](https://github.com/devlooped/dotnet-trx/tree/v0.3.1) (2024-07-07)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.3.0...v0.3.1)
