@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -250,7 +251,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         }
 
         sb.AppendLine(
-            $"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) with [:purple_heart:](https://github.com/sponsors/devlooped)");
+            $"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) with [:purple_heart:](https://github.com/sponsors/devlooped) via {RuntimeInformation.FrameworkDescription} on {RuntimeInformation.OSDescription}");
 
         if (TryExecute("gh", $"pr comment {pr} --body-file -", sb.ToString(), out var link))
             WriteLine($"::notice title=Added summary as [pull-request comment]({link})");
