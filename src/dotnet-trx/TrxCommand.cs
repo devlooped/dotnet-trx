@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -19,6 +20,10 @@ namespace Devlooped;
 
 public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 {
+    const string Header = "<!-- header -->";
+    const string Footer = "<!-- footer -->";
+    const string Signature = "<!-- trx -->";
+
     public class TrxSettings : CommandSettings
     {
         [Description("Optional base directory for *.trx files discovery. Defaults to current directory.")]
@@ -69,10 +74,10 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
         // markdown details for gh comment
         var details = new StringBuilder().AppendLine(
-            """
+            $"""
             <details>
 
-            <summary>:test_tube: Details</summary>
+            <summary>:test_tube: Details on {OS}</summary>
 
             """);
 
@@ -219,47 +224,90 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
     static void GitHubReport(Summary summary, StringBuilder details)
     {
+        // Don't report anything if there's nothing to report.
+        if (summary.Total == 0)
+            return;
+
         if (TryExecute("gh", "--version", out var output) && output?.StartsWith("gh version") != true)
             return;
 
         // See https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables 
         if (Environment.GetEnvironmentVariable("GITHUB_REF_NAME") is not { } branch ||
             !branch.EndsWith("/merge") ||
-            !int.TryParse(branch[..^6], out var pr))
+            !int.TryParse(branch[..^6], out var pr) ||
+            Environment.GetEnvironmentVariable("GITHUB_REPOSITORY") is not { Length: > 0 } repo)
             return;
 
-        var sb = new StringBuilder()
-            .AppendLine(
-                $"""
-                 :point_right: Run {summary.Total} tests in ~ {summary.Duration.Humanize()}: 
+        var sb = new StringBuilder();
+        var elapsed = FormatTimeSpan(summary.Duration);
+        long commentId = 0;
 
-                """);
-
-        if (summary.Passed > 0)
-            sb.Append($"![{summary.Passed} passed](https://img.shields.io/badge/passed-{summary.Passed}-brightgreen) ");
-        if (summary.Failed > 0)
-            sb.Append($"![{summary.Failed} failed](https://img.shields.io/badge/failed-{summary.Failed}-red) ");
-        if (summary.Skipped > 0)
-            sb.Append($"![{summary.Skipped} skipped](https://img.shields.io/badge/skipped-{summary.Skipped}-silver) ");
-
-        sb.AppendLine();
-
-        if (summary.Total > 0)
+        static void AppendBadges(Summary summary, StringBuilder builder, string elapsed)
         {
-            sb.Append(details);
-            sb.AppendLine();
+            // ![5 passed](https://img.shields.io/badge/❌-linux%20in%2015m%206s-blue) ![5 passed](https://img.shields.io/badge/os-macOS%20✅-blue)
+            if (summary.Failed > 0)
+                builder.Append($"![{summary.Failed} failed](https://img.shields.io/badge/❌-{Runtime}%20in%20{elapsed}-blue) ");
+            else if (summary.Passed > 0)
+                builder.Append($"![{summary.Passed} passed](https://img.shields.io/badge/✅-{Runtime}%20in%20{elapsed}-blue) ");
+            else
+                builder.Append($"![{summary.Skipped} skipped](https://img.shields.io/badge/⚪-{Runtime}%20in%20{elapsed}-blue) ");
+
+            if (summary.Passed > 0)
+                builder.Append($"![{summary.Passed} passed](https://img.shields.io/badge/passed-{summary.Passed}-brightgreen) ");
+            if (summary.Failed > 0)
+                builder.Append($"![{summary.Failed} failed](https://img.shields.io/badge/failed-{summary.Failed}-red) ");
+            if (summary.Skipped > 0)
+                builder.Append($"![{summary.Skipped} skipped](https://img.shields.io/badge/skipped-{summary.Skipped}-silver) ");
+
+            builder.AppendLine();
         }
 
-        var os = RuntimeInformation.OSDescription;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            // Otherwise we end up with this, yuck: Darwin 23.5.0 Darwin Kernel Version 23.5.0: Wed May 1 20:12:39 PDT 2024; root:xnu-10063.121.3~5/RELEASE_ARM64_VMAPPLE
-            os = $"macOS {Environment.OSVersion.VersionString}";
+        // Find potentially existing comment to update
+        if (TryExecute("gh",
+            ["api", $"repos/{repo}/issues/{pr}/comments", "--jq", "[.[] | { id:.id, body:.body } | select(.body | contains(\"<!-- trx -->\")) | .id][0]"],
+            out var comment) && comment != null && long.TryParse(comment.Trim(), out commentId) &&
+            TryExecute("gh", ["api", $"repos/{repo}/issues/comments/{commentId}", "--jq", ".body"], out var body) && body != null &&
+            body.IndexOf(Header) is var start && start != -1 &&
+            body.IndexOf(Footer) is var end && end != -1 && end > start)
+        {
+            sb.AppendLine(body[..start].TrimEnd());
+            AppendBadges(summary, sb, elapsed);
+            sb.AppendLine(body[start..end].Trim());
+            sb.AppendLine();
+            sb.Append(details);
+            sb.AppendLine();
+            sb.AppendLine(body[end..].TrimStart());
+        }
+        else
+        {
+            AppendBadges(summary, sb, elapsed);
+            sb.AppendLine(Header);
+            sb.AppendLine();
+            sb.Append(details);
+            sb.AppendLine(Footer);
+            sb.AppendLine();
+            sb.AppendLine(
+                $"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped)");
+        }
 
-        sb.AppendLine(
-            $"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) with [:purple_heart:](https://github.com/sponsors/devlooped) via {RuntimeInformation.FrameworkDescription} on {os}");
+        body = sb.ToString().Trim();
+        if (!body.EndsWith(Signature))
+            body += Environment.NewLine + Signature;
 
-        if (TryExecute("gh", $"pr comment {pr} --body-file -", sb.ToString(), out var link))
-            WriteLine($"::notice title=Added summary as [pull-request comment]({link})");
+        var input = Path.GetTempFileName();
+
+        if (commentId > 0)
+        {
+            // API requires a json payload
+            File.WriteAllText(input, JsonSerializer.Serialize(new { body }));
+            TryExecute("gh", $"api repos/{repo}/issues/comments/{commentId} -X PATCH --input {input}", out _);
+        }
+        else
+        {
+            // CLI can use the straight body
+            File.WriteAllText(input, body);
+            TryExecute("gh", $"pr comment {pr} --body-file {input}", out _);
+        }
     }
 
     void WriteError(string baseDir, List<Failed> failures, XElement result, StringBuilder details)
@@ -331,6 +379,28 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         // Add to collected failures we may report to GH CI
         if (failed != null)
             failures.Add(failed);
+    }
+
+    static string Runtime => RuntimeInformation.RuntimeIdentifier.Replace("-", "&dash;");
+    static string OS => RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
+        // Otherwise we end up with this, yuck: Darwin 23.5.0 Darwin Kernel Version 23.5.0: Wed May 1 20:12:39 PDT 2024; root:xnu-10063.121.3~5/RELEASE_ARM64_VMAPPLE
+        ? $"macOS {Environment.OSVersion.VersionString}" :
+        RuntimeInformation.OSDescription;
+
+    static string FormatTimeSpan(TimeSpan timeSpan)
+    {
+        var parts = new List<string>();
+
+        if (timeSpan.Hours > 0)
+            parts.Add($"{timeSpan.Hours}h");
+
+        if (timeSpan.Minutes > 0)
+            parts.Add($"{timeSpan.Minutes}m");
+
+        if (timeSpan.Seconds > 0 || parts.Count == 0) // Always include seconds if no other parts
+            parts.Add($"{timeSpan.Seconds}s");
+
+        return string.Join(" ", parts);
     }
 
     // in C:\path\to\file.cs:line 123
