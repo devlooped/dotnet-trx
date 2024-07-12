@@ -38,6 +38,12 @@ public class Tests(ITestOutputHelper output)
         runner();
     }
 
+    [PlatformFact(PlatformID.Win32NT)]
+    public void WindowsOnlyTest() => output.WriteLine("This test runs only on Windows");
+
+    [PlatformFact(PlatformID.Unix)]
+    public void FailsOnlyOnUnix() => Assert.Fail("Fails on Unix");
+
     void Run() => Unexpected();
 
     void Unexpected() => throw new InvalidOperationException("This should not happen!");
