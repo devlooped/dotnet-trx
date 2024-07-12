@@ -160,7 +160,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
                     if (reason != null)
                     {
-                        Markup($"[dim] => {reason}[/]");
+                        Markup($"[dim] => {reason.EscapeMarkup()}[/]");
                         details.Append($" => {reason}");
                     }
 
@@ -173,7 +173,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
             if (output != null)
             {
-                Write(new Panel($"[dim]{output.ReplaceLineEndings()}[/]")
+                Write(new Panel($"[dim]{output.ReplaceLineEndings().EscapeMarkup()}[/]")
                 {
                     Border = BoxBorder.None,
                     Padding = new Padding(5, 0, 0, 0),
@@ -378,7 +378,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             var match = ParseFile().Match(line);
             if (!match.Success)
             {
-                cli.AppendLine(line);
+                cli.AppendLine(line.EscapeMarkup());
                 details.AppendLineIndented(line, "> ");
                 continue;
             }
@@ -400,7 +400,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
         var error = new Panel(
             $"""
-            [red]{message}[/]
+            [red]{message.EscapeMarkup()}[/]
             [dim]{cli}[/]
             """);
         error.Padding = new Padding(5, 0, 0, 0);
