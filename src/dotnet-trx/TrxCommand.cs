@@ -238,7 +238,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         if (Environment.GetEnvironmentVariable("GITHUB_REF_NAME") is not { } branch ||
             !branch.EndsWith("/merge") ||
             !int.TryParse(branch[..^6], out var pr) ||
-            Environment.GetEnvironmentVariable("GITHUB_REPOSITORY") is not { Length: > 0 } repo || 
+            Environment.GetEnvironmentVariable("GITHUB_REPOSITORY") is not { Length: > 0 } repo ||
             Environment.GetEnvironmentVariable("GITHUB_RUN_ID") is not { Length: > 0 } runId)
             return;
 
@@ -275,7 +275,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             body.IndexOf(Footer) is var end && end != -1 && end > start &&
             // We only append if the run id matches the current run, otherwise we'll just create
             // entirely new body. Means we'll only keep the latest run for the PR to keep the noise down.
-            TrxRunId().Match(body) is { Success: true } match && 
+            TrxRunId().Match(body) is { Success: true } match &&
             match.Groups["id"].Value == runId)
         {
             sb.AppendLine(body[..start].TrimEnd());
