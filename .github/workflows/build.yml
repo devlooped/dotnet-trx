@@ -50,6 +50,7 @@ jobs:
     name: build-${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: ${{ fromJSON(needs.os-matrix.outputs.matrix) }}
     steps:
@@ -78,6 +79,8 @@ jobs:
 
       - name: 🧪 show
         if: always()
+        env:
+          GH_JOB_NAME: build-${{ matrix.os }}
         run:  
           dotnet run --no-build --project ./src/dotnet-trx/ --output
 

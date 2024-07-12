@@ -240,18 +240,37 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             !int.TryParse(branch[..^6], out var pr) ||
             Environment.GetEnvironmentVariable("GITHUB_REPOSITORY") is not { Length: > 0 } repo ||
             Environment.GetEnvironmentVariable("GITHUB_RUN_ID") is not { Length: > 0 } runId ||
-            Environment.GetEnvironmentVariable("GITHUB_JOB") is not { Length: > 0 } jobId ||
+            Environment.GetEnvironmentVariable("GITHUB_JOB") is not { Length: > 0 } jobName ||
             Environment.GetEnvironmentVariable("GITHUB_SERVER_URL") is not { Length: > 0 } serverUrl)
             return;
 
-        var jobUrl = $"{serverUrl}/{repo}/actions/runs/{runId}/job/{jobId}?pr={pr}";
+        // Some day, it might just show-up and we'd be forwards compatible. 
+        // See https://github.com/orgs/community/discussions/129314 and https://github.com/actions/runner/issues/324
+        var jobId = Environment.GetEnvironmentVariable("GITHUB_JOB_ID");
+
+        // Provide a mechanism that would work on matrix in the meantime
+        if (Environment.GetEnvironmentVariable("GH_JOB_NAME") is { Length: > 0 } ghJobName)
+            jobName = ghJobName;
+
+        string? jobUrl = default;
+
+        if (!string.IsNullOrEmpty(jobId))
+            jobUrl = $"{serverUrl}/{repo}/actions/runs/{runId}/jobs/{jobId}?pr={pr}";
+
         var sb = new StringBuilder();
         var elapsed = FormatTimeSpan(summary.Duration);
         long commentId = 0;
 
-        static string Link(string image, string url) => $"[{image}]({url}) ";
+        if (jobUrl == null && TryExecute("gh",
+            ["api", $"repos/devlooped/dotnet-trx/actions/runs/{runId}/jobs", "--jq", $"[.jobs[] | select(.name == \"{jobName}\") | .id]"],
+            out var jobsJson) && jobsJson != null && JsonSerializer.Deserialize<long[]>(jobsJson) is { Length: 1 } jobIds)
+        {
+            jobUrl = $"{serverUrl}/{repo}/actions/runs/{runId}/job/{jobIds[0]}?pr={pr}";
+        }
 
-        static void AppendBadges(Summary summary, StringBuilder builder, string elapsed, string jobUrl)
+        static string Link(string image, string? url) => url == null ? image + " " : $"[{image}]({url}) ";
+
+        static void AppendBadges(Summary summary, StringBuilder builder, string elapsed, string? jobUrl)
         {
             // ![5 passed](https://img.shields.io/badge/❌-linux%20in%2015m%206s-blue) ![5 passed](https://img.shields.io/badge/os-macOS%20✅-blue)
             if (summary.Failed > 0)
