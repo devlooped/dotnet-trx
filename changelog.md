@@ -1,5 +1,21 @@
 # Changelog
 
+## [v0.3.4](https://github.com/devlooped/dotnet-trx/tree/v0.3.4) (2024-07-12)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.3.3...v0.3.4)
+
+:sparkles: Implemented enhancements:
+
+- Add options to disable GH comment and summary reporting [\#23](https://github.com/devlooped/dotnet-trx/pull/23) (@kzu)
+- Fix notices that can contain multiple lines [\#22](https://github.com/devlooped/dotnet-trx/pull/22) (@kzu)
+- Link badges directly to job run for details [\#20](https://github.com/devlooped/dotnet-trx/pull/20) (@kzu)
+- Add support for reusing the same PR comment for badges/details [\#19](https://github.com/devlooped/dotnet-trx/pull/19) (@kzu)
+
+:bug: Fixed bugs:
+
+- Error: Could not find color or style 'System.Int32'. [\#18](https://github.com/devlooped/dotnet-trx/issues/18)
+- Make sure we escape markup when rendering formatted [\#21](https://github.com/devlooped/dotnet-trx/pull/21) (@kzu)
+
 ## [v0.3.3](https://github.com/devlooped/dotnet-trx/tree/v0.3.3) (2024-07-07)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.3.2...v0.3.3)
