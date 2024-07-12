@@ -53,6 +53,10 @@ jobs:
       matrix:
         os: ${{ fromJSON(needs.os-matrix.outputs.matrix) }}
     steps:
+      - name: 🖨️ env
+        if: runner.debug
+        run: printenv
+  
       - name: 🤘 checkout
         uses: actions/checkout@v4
         with: 
