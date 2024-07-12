@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -335,7 +336,41 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         {
             // API requires a json payload
             File.WriteAllText(input, JsonSerializer.Serialize(new { body }));
-            TryExecute("gh", $"api repos/{repo}/issues/comments/{commentId} -X PATCH --input {input}", out _);
+            static bool TryGetETag(string repo, long comment, [NotNullWhen(true)] out string? etag)
+            {
+                etag = null;
+                if (TryExecute("gh", $"api -i repos/{repo}/issues/comments/{comment}", out var headers) &&
+                    headers?.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault(x => x.StartsWith("Etag:", StringComparison.OrdinalIgnoreCase)) is { } etagHeader)
+                    etag = etagHeader.Split(":")[1].Trim();
+
+                // TODO: this DOES NOT WORK FOR NOW
+                // See https://github.com/orgs/community/discussions/50084
+                //return etag != null;
+                return false;
+            }
+
+            if (TryGetETag(repo, commentId, out var etag))
+            {
+                // If we're patching, we need to do optimistic concurrency check to avoid losing updates
+                while (!TryExecute("gh",
+                    [
+                        "api",
+                        "-H", $"if-match: {etag}",
+                        "-X", "PATCH",
+                        $"repos/{repo}/issues/comments/{commentId}",
+                        "--input", input
+                    ], out _))
+                {
+                    if (!TryGetETag(repo, commentId, out var newEtag) || newEtag == etag)
+                        break;
+
+                    etag = newEtag;
+                }
+            }
+            else
+            {
+                TryExecute("gh", $"api repos/{repo}/issues/comments/{commentId} -X PATCH --input {input}", out _);
+            }
         }
         else
         {

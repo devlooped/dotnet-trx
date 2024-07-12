@@ -40,9 +40,6 @@ static class Process
         try
         {
             info.StandardOutputEncoding = Encoding.UTF8;
-            //if (input != null)
-            //    info.StandardInputEncoding = Encoding.UTF8;
-
             var proc = System.Diagnostics.Process.Start(info);
             if (proc == null)
             {
@@ -69,7 +66,7 @@ static class Process
             }
 
             var error = proc.StandardError.ReadToEnd();
-            gotError |= error.Length > 0;
+            gotError |= error.Trim().Length > 0;
             output = output.Trim();
             if (string.IsNullOrEmpty(output))
                 output = null;
