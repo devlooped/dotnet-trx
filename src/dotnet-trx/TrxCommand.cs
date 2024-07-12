@@ -50,6 +50,22 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [Description("Show version information")]
         [CommandOption("--version")]
         public bool? Version { get; init; }
+
+        /// <summary>
+        /// Report as GitHub PR comment.
+        /// </summary>
+        [Description("Report as GitHub PR comment")]
+        [CommandOption("--gh-comment")]
+        [DefaultValue(true)]
+        public bool GitHubComment { get; init; } = true;
+
+        /// <summary>
+        /// Report as GitHub PR comment.
+        /// </summary>
+        [Description("Report as GitHub step summary")]
+        [CommandOption("--gh-summary")]
+        [DefaultValue(true)]
+        public bool GitHubSummary { get; init; } = true;
     }
 
     public override int Execute(CommandContext context, TrxSettings settings)
@@ -188,9 +204,10 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         MarkupSummary(summary);
         WriteLine();
 
-        if (Environment.GetEnvironmentVariable("CI") == "true")
+        if (Environment.GetEnvironmentVariable("CI") == "true" &&
+            (settings.GitHubComment || settings.GitHubSummary))
         {
-            GitHubReport(summary, details);
+            GitHubReport(settings, summary, details);
             if (failures.Count > 0)
             {
                 // Send workflow commands for each failure to be annotated in GH CI
@@ -222,7 +239,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             MarkupLine($"   :white_question_mark: {summary.Skipped} skipped");
     }
 
-    static void GitHubReport(Summary summary, StringBuilder details)
+    static void GitHubReport(TrxSettings settings, Summary summary, StringBuilder details)
     {
         // Don't report anything if there's nothing to report.
         if (summary.Total == 0)
@@ -332,21 +349,24 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         body += Environment.NewLine + $"<!-- trx:{runId} -->";
 
         var input = Path.GetTempFileName();
-
-        if (commentId > 0)
+        if (settings.GitHubComment)
         {
-            // API requires a json payload
-            File.WriteAllText(input, JsonSerializer.Serialize(new { body }));
-            TryExecute("gh", $"api repos/{repo}/issues/comments/{commentId} -X PATCH --input {input}", out _);
-        }
-        else
-        {
-            // CLI can use the straight body
-            File.WriteAllText(input, body);
-            TryExecute("gh", $"pr comment {pr} --body-file {input}", out _);
+            if (commentId > 0)
+            {
+                // API requires a json payload
+                File.WriteAllText(input, JsonSerializer.Serialize(new { body }));
+                TryExecute("gh", $"api repos/{repo}/issues/comments/{commentId} -X PATCH --input {input}", out _);
+            }
+            else
+            {
+                // CLI can use the straight body
+                File.WriteAllText(input, body);
+                TryExecute("gh", $"pr comment {pr} --body-file {input}", out _);
+            }
         }
 
-        if (Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY") is { Length: > 0 } summaryPath &&
+        if (settings.GitHubSummary &&
+            Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY") is { Length: > 0 } summaryPath &&
             File.Exists(summaryPath))
         {
             File.AppendAllText(summaryPath,
