@@ -195,7 +195,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             {
                 // Send workflow commands for each failure to be annotated in GH CI
                 foreach (var failure in failures)
-                    WriteLine($"::error file={failure.File},line={failure.Line},title={failure.Message}::{failure.Message}");
+                    WriteLine($"::error file={failure.File},line={failure.Line},title={failure.Title}::{failure.Message}");
             }
         }
 
@@ -391,7 +391,10 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
             // NOTE: we replace whichever was last, since we want the annotation on the 
             // last one with a filename, which will be the test itself (see previous skip from last found).
-            failed = new Failed(testName, message, relative, int.Parse(pos));
+            failed = new Failed(testName,
+                message.ReplaceLineEndings().Replace(Environment.NewLine, "%0A"),
+                stackTrace.ReplaceLineEndings().Replace(Environment.NewLine, "%0A"),
+                relative, int.Parse(pos));
 
             cli.AppendLine(line.Replace(file, $"[link={file}][steelblue1_1]{relative}[/][/]"));
             // TODO: can we render a useful link in comment details?
@@ -450,5 +453,5 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         public int Total => Passed + Failed + Skipped;
     }
 
-    record Failed(string Test, string Message, string File, int Line);
+    record Failed(string Test, string Title, string Message, string File, int Line);
 }
