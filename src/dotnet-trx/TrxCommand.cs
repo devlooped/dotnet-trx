@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Devlooped.Web;
 using Humanizer;
@@ -239,7 +238,8 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         if (Environment.GetEnvironmentVariable("GITHUB_REF_NAME") is not { } branch ||
             !branch.EndsWith("/merge") ||
             !int.TryParse(branch[..^6], out var pr) ||
-            Environment.GetEnvironmentVariable("GITHUB_REPOSITORY") is not { Length: > 0 } repo)
+            Environment.GetEnvironmentVariable("GITHUB_REPOSITORY") is not { Length: > 0 } repo || 
+            Environment.GetEnvironmentVariable("GITHUB_RUN_ID") is not { Length: > 0 } runId)
             return;
 
         var sb = new StringBuilder();
@@ -268,11 +268,15 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
         // Find potentially existing comment to update
         if (TryExecute("gh",
-            ["api", $"repos/{repo}/issues/{pr}/comments", "--jq", "[.[] | { id:.id, body:.body } | select(.body | contains(\"<!-- trx -->\")) | .id][0]"],
+            ["api", $"repos/{repo}/issues/{pr}/comments", "--jq", "[.[] | { id:.id, body:.body } | select(.body | contains(\"<!-- trx\")) | .id][0]"],
             out var comment) && comment != null && long.TryParse(comment.Trim(), out commentId) &&
             TryExecute("gh", ["api", $"repos/{repo}/issues/comments/{commentId}", "--jq", ".body"], out var body) && body != null &&
             body.IndexOf(Header) is var start && start != -1 &&
-            body.IndexOf(Footer) is var end && end != -1 && end > start)
+            body.IndexOf(Footer) is var end && end != -1 && end > start &&
+            // We only append if the run id matches the current run, otherwise we'll just create
+            // entirely new body. Means we'll only keep the latest run for the PR to keep the noise down.
+            TrxRunId().Match(body) is { Success: true } match && 
+            match.Groups["id"].Value == runId)
         {
             sb.AppendLine(body[..start].TrimEnd());
             AppendBadges(summary, sb, elapsed);
@@ -295,8 +299,11 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         }
 
         body = sb.ToString().Trim();
-        if (!body.EndsWith(Signature))
-            body += Environment.NewLine + Signature;
+        if (body.IndexOf("<!-- trx") is var signatureIndex && signatureIndex != -1)
+            body = body[..signatureIndex].Trim();
+
+        // Always append the run this comment belongs to, for grouping.
+        body += Environment.NewLine + $"<!-- trx:{runId} -->";
 
         var input = Path.GetTempFileName();
 
@@ -410,6 +417,9 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
     // in C:\path\to\file.cs:line 123
     [GeneratedRegex(@" in (?<file>.+):line (?<line>\d+)", RegexOptions.Compiled)]
     private static partial Regex ParseFile();
+
+    [GeneratedRegex(@"<!--\strx:(?<id>\d+)\s-->")]
+    private static partial Regex TrxRunId();
 
     record Summary(int Passed, int Failed, int Skipped, TimeSpan Duration)
     {
