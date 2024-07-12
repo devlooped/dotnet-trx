@@ -239,29 +239,34 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             !branch.EndsWith("/merge") ||
             !int.TryParse(branch[..^6], out var pr) ||
             Environment.GetEnvironmentVariable("GITHUB_REPOSITORY") is not { Length: > 0 } repo ||
-            Environment.GetEnvironmentVariable("GITHUB_RUN_ID") is not { Length: > 0 } runId)
+            Environment.GetEnvironmentVariable("GITHUB_RUN_ID") is not { Length: > 0 } runId ||
+            Environment.GetEnvironmentVariable("GITHUB_JOB") is not { Length: > 0 } jobId ||
+            Environment.GetEnvironmentVariable("GITHUB_SERVER_URL") is not { Length: > 0 } serverUrl)
             return;
 
+        var jobUrl = $"{serverUrl}/{repo}/actions/runs/{runId}/job/{jobId}?pr={pr}";
         var sb = new StringBuilder();
         var elapsed = FormatTimeSpan(summary.Duration);
         long commentId = 0;
 
-        static void AppendBadges(Summary summary, StringBuilder builder, string elapsed)
+        static string Link(string image, string url) => $"[{image}]({url}) ";
+
+        static void AppendBadges(Summary summary, StringBuilder builder, string elapsed, string jobUrl)
         {
             // ![5 passed](https://img.shields.io/badge/❌-linux%20in%2015m%206s-blue) ![5 passed](https://img.shields.io/badge/os-macOS%20✅-blue)
             if (summary.Failed > 0)
-                builder.Append($"![{summary.Failed} failed](https://img.shields.io/badge/❌-{Runtime}%20in%20{elapsed}-blue) ");
+                builder.Append(Link($"![{summary.Failed} failed](https://img.shields.io/badge/❌-{Runtime}%20in%20{elapsed}-blue)", jobUrl));
             else if (summary.Passed > 0)
-                builder.Append($"![{summary.Passed} passed](https://img.shields.io/badge/✅-{Runtime}%20in%20{elapsed}-blue) ");
+                builder.Append(Link($"![{summary.Passed} passed](https://img.shields.io/badge/✅-{Runtime}%20in%20{elapsed}-blue)", jobUrl));
             else
-                builder.Append($"![{summary.Skipped} skipped](https://img.shields.io/badge/⚪-{Runtime}%20in%20{elapsed}-blue) ");
+                builder.Append(Link($"![{summary.Skipped} skipped](https://img.shields.io/badge/⚪-{Runtime}%20in%20{elapsed}-blue)", jobUrl));
 
             if (summary.Passed > 0)
-                builder.Append($"![{summary.Passed} passed](https://img.shields.io/badge/passed-{summary.Passed}-brightgreen) ");
+                builder.Append(Link($"![{summary.Passed} passed](https://img.shields.io/badge/passed-{summary.Passed}-brightgreen)", jobUrl));
             if (summary.Failed > 0)
-                builder.Append($"![{summary.Failed} failed](https://img.shields.io/badge/failed-{summary.Failed}-red) ");
+                builder.Append(Link($"![{summary.Failed} failed](https://img.shields.io/badge/failed-{summary.Failed}-red)", jobUrl));
             if (summary.Skipped > 0)
-                builder.Append($"![{summary.Skipped} skipped](https://img.shields.io/badge/skipped-{summary.Skipped}-silver) ");
+                builder.Append(Link($"![{summary.Skipped} skipped](https://img.shields.io/badge/skipped-{summary.Skipped}-silver)", jobUrl));
 
             builder.AppendLine();
         }
@@ -279,7 +284,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             match.Groups["id"].Value == runId)
         {
             sb.AppendLine(body[..start].TrimEnd());
-            AppendBadges(summary, sb, elapsed);
+            AppendBadges(summary, sb, elapsed, jobUrl);
             sb.AppendLine(body[start..end].Trim());
             sb.AppendLine();
             sb.Append(details);
@@ -288,7 +293,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         }
         else
         {
-            AppendBadges(summary, sb, elapsed);
+            AppendBadges(summary, sb, elapsed, jobUrl);
             sb.AppendLine(Header);
             sb.AppendLine();
             sb.Append(details);
