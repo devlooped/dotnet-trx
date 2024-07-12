@@ -228,6 +228,10 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         if (summary.Total == 0)
             return;
 
+        if (Environment.GetEnvironmentVariable("GITHUB_EVENT_NAME") != "pull_request" ||
+            Environment.GetEnvironmentVariable("GITHUB_ACTIONS") != "true")
+            return;
+
         if (TryExecute("gh", "--version", out var output) && output?.StartsWith("gh version") != true)
             return;
 
