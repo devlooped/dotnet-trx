@@ -191,11 +191,12 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         if (Environment.GetEnvironmentVariable("CI") == "true")
         {
             GitHubReport(summary, details);
-            if (failures.Count > 0 && Environment.GetEnvironmentVariable("CI") == "true")
+            if (failures.Count > 0)
             {
                 // Send workflow commands for each failure to be annotated in GH CI
-                foreach (var failure in failures)
-                    WriteLine($"::error file={failure.File},line={failure.Line},title={failure.Title}::{failure.Message}");
+                // TODO: somehow the notice does not end up pointing to the right file/line
+                //foreach (var failure in failures)
+                //    WriteLine($"::error file={failure.File},line={failure.Line},title={failure.Title}::{failure.Message}");
             }
         }
 
@@ -270,7 +271,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
         static string Link(string image, string? url) => url == null ? image + " " : $"[{image}]({url}) ";
 
-        static void AppendBadges(Summary summary, StringBuilder builder, string elapsed, string? jobUrl)
+        static StringBuilder AppendBadges(Summary summary, StringBuilder builder, string elapsed, string? jobUrl)
         {
             // ![5 passed](https://img.shields.io/badge/❌-linux%20in%2015m%206s-blue) ![5 passed](https://img.shields.io/badge/os-macOS%20✅-blue)
             if (summary.Failed > 0)
@@ -288,6 +289,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
                 builder.Append(Link($"![{summary.Skipped} skipped](https://img.shields.io/badge/skipped-{summary.Skipped}-silver)", jobUrl));
 
             builder.AppendLine();
+            return builder;
         }
 
         // Find potentially existing comment to update
@@ -342,6 +344,18 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             // CLI can use the straight body
             File.WriteAllText(input, body);
             TryExecute("gh", $"pr comment {pr} --body-file {input}", out _);
+        }
+
+        if (Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY") is { Length: > 0 } summaryPath &&
+            File.Exists(summaryPath))
+        {
+            File.AppendAllText(summaryPath,
+                AppendBadges(summary, new(), elapsed, jobUrl)
+                .AppendLine()
+                .Append(details)
+                .AppendLine()
+                .AppendLine($"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped)")
+                .ToString());
         }
     }
 
