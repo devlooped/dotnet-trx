@@ -79,6 +79,7 @@ jobs:
 
       - name: 🧪 show
         if: always()
+        continue-on-error: true
         env:
           GH_JOB_NAME: build-${{ matrix.os }}
         run:  
