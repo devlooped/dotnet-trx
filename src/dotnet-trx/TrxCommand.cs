@@ -47,6 +47,14 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [DefaultValue(true)]
         public bool Skipped { get; init; } = true;
 
+        /// <summary>
+        /// Whether to return a -1 exit code on test failures.
+        /// </summary>
+        [Description("Do not return a -1 exit code on test failures")]
+        [CommandOption("--no-exit-code")]
+        [DefaultValue(false)]
+        public bool NoExitCode { get; init; } = false;
+
         [Description("Show version information")]
         [CommandOption("--version")]
         public bool? Version { get; init; }
@@ -217,7 +225,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             }
         }
 
-        return 0;
+        return settings.NoExitCode || failed == 0 ? 0 : -1;
     }
 
     static void MarkupSummary(Summary summary)
