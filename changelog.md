@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.4.0](https://github.com/devlooped/dotnet-trx/tree/v0.4.0) (2024-07-15)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.3.4...v0.4.0)
+
+:sparkles: Implemented enhancements:
+
+- Exit code should match success/failure status [\#24](https://github.com/devlooped/dotnet-trx/pull/24) (@kzu)
+
 ## [v0.3.4](https://github.com/devlooped/dotnet-trx/tree/v0.3.4) (2024-07-12)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.3.3...v0.3.4)
