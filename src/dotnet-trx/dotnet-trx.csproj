@@ -35,4 +35,8 @@
     <ProjectProperty Include="PackageProjectUrl" />
   </ItemGroup>
 
+  <Target Name="RenderHelp" AfterTargets="Build">
+    <Exec Command="dotnet run --no-build -- -? &gt; help.txt" EnvironmentVariables="NO_COLOR=true" />
+  </Target>
+
 </Project>

@@ -32,16 +32,7 @@ And view results in an automatic pull request comment like:
 > NOTE: this behavior is triggered by the presence of the `GITHUB_REF_NAME` and `CI` environment variables.
 
 ```shell
-USAGE:
-    trx [OPTIONS]
-
-OPTIONS:
-                       DEFAULT
-    -h, --help                    Prints help information
-    -p, --path                    Optional base directory for *.trx files discovery. Defaults to current directory
-    -o, --output       False      Include test output
-    -r, --recursive    True       Recursively search for *.trx files
-        --version                 Show version information
+<!-- include src/dotnet-trx/help.txt -->
 ```
 
 Install:
