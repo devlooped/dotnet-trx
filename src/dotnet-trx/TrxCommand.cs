@@ -23,7 +23,18 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
     const string Footer = "<!-- footer -->";
     const string Signature = "<!-- trx -->";
 
-    public class TrxSettings : CommandSettings
+    public interface ITrxSettings
+    {
+        bool GitHubComment { get; init; }
+        bool GitHubSummary { get; init; }
+        bool NoExitCode { get; init; }
+        bool Output { get; init; }
+        string? Path { get; init; }
+        bool Recursive { get; init; }
+        bool Skipped { get; init; }
+    }
+
+    public class TrxSettings : CommandSettings, ITrxSettings
     {
         [Description("Optional base directory for *.trx files discovery. Defaults to current directory.")]
         [CommandOption("-p|--path")]
