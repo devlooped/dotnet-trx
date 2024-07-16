@@ -32,6 +32,7 @@
     <ProjectProperty Include="BuildRef" />
     <ProjectProperty Include="PackageId" />
     <ProjectProperty Include="PackageVersion" />
+    <ProjectProperty Include="PackageProjectUrl" />
   </ItemGroup>
 
 </Project>

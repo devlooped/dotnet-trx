@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Devlooped.Web;
 using Humanizer;
+using NuGet.Common;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using static Devlooped.Process;
@@ -22,6 +23,9 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
     const string Header = "<!-- header -->";
     const string Footer = "<!-- footer -->";
     const string Signature = "<!-- trx -->";
+
+    static string Author => 
+        $"from [{ThisAssembly.Project.PackageId}]({ThisAssembly.Project.PackageProjectUrl}) on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped)");
 
     public interface ITrxSettings
     {
@@ -342,22 +346,21 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         {
             sb.AppendLine(body[..start].TrimEnd());
             AppendBadges(summary, sb, elapsed, jobUrl);
-            sb.AppendLine(body[start..end].Trim());
-            sb.AppendLine();
-            sb.Append(details);
-            sb.AppendLine();
-            sb.AppendLine(body[end..].TrimStart());
+            sb.AppendLine(body[start..end].Trim())
+              .AppendLine()
+              .Append(details)
+              .AppendLine()
+              .AppendLine(body[end..].TrimStart());
         }
         else
         {
             AppendBadges(summary, sb, elapsed, jobUrl);
-            sb.AppendLine(Header);
-            sb.AppendLine();
-            sb.Append(details);
-            sb.AppendLine(Footer);
-            sb.AppendLine();
-            sb.AppendLine(
-                $"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped)");
+            sb.AppendLine(Header)
+              .AppendLine()
+              .Append(details)
+              .AppendLine(Footer)
+              .AppendLine()
+              .AppendLine(Author);
         }
 
         body = sb.ToString().Trim();
@@ -393,7 +396,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
                 .AppendLine()
                 .Append(details)
                 .AppendLine()
-                .AppendLine($"from [dotnet-trx](https://github.com/devlooped/dotnet-trx) on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped)")
+                .AppendLine(Author)
                 .ToString());
         }
     }
