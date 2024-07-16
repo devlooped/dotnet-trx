@@ -18,6 +18,7 @@ Set up workflow with:
 
 ```yml
     - name: 🧪 show
+      continue-on-error: true
       if: always()
       run:  
         dotnet tool update -g dotnet-trx
