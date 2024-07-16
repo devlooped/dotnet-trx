@@ -24,8 +24,8 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
     const string Footer = "<!-- footer -->";
     const string Signature = "<!-- trx -->";
 
-    static string Author => 
-        $"from [{ThisAssembly.Project.PackageId}]({ThisAssembly.Project.PackageProjectUrl}) on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped)");
+    static string Author =>
+        $"from [{ThisAssembly.Project.PackageId}]({ThisAssembly.Project.PackageProjectUrl}) on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped)";
 
     public interface ITrxSettings
     {
