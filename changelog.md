@@ -1,5 +1,17 @@
 # Changelog
 
+## [v0.4.1](https://github.com/devlooped/dotnet-trx/tree/v0.4.1) (2024-07-17)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.4.0...v0.4.1)
+
+:sparkles: Implemented enhancements:
+
+- Auto-document CLI options [\#25](https://github.com/devlooped/dotnet-trx/pull/25) (@kzu)
+
+:bug: Fixed bugs:
+
+- Ensure we don't render style for default option value [\#27](https://github.com/devlooped/dotnet-trx/pull/27) (@kzu)
+
 ## [v0.4.0](https://github.com/devlooped/dotnet-trx/tree/v0.4.0) (2024-07-15)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.3.4...v0.4.0)
