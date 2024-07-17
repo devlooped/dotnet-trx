@@ -1,3 +1,4 @@
+```shell
 USAGE:
     trx [OPTIONS]
 
@@ -14,3 +15,4 @@ OPTIONS:
         --version                    Show version information                   
         --gh-comment      [1mTrue[0m       Report as GitHub PR comment                
         --gh-summary      [1mTrue[0m       Report as GitHub step summary              
+```

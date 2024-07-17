@@ -60,7 +60,7 @@ static async Task<string[]> CheckUpdates(string[] args)
             RefreshMemoryCache = true,
         },
         NuGet.Common.NullLogger.Instance, CancellationToken.None);
-
+    
     var update = metadata
         .Select(x => x.Identity)
         .Where(x => x.Version > localVersion)
