@@ -31,9 +31,7 @@ And view results in an automatic pull request comment like:
 
 > NOTE: this behavior is triggered by the presence of the `GITHUB_REF_NAME` and `CI` environment variables.
 
-```shell
 <!-- include src/dotnet-trx/help.md -->
-```
 
 Install:
 
