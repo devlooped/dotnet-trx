@@ -20,7 +20,13 @@ if (args.Contains("-?"))
 if (args.Contains("--debug"))
     Debugger.Launch();
 
-app.Configure(config => config.SetApplicationName(ThisAssembly.Project.ToolCommandName));
+app.Configure(config =>
+{
+    config.SetApplicationName(ThisAssembly.Project.ToolCommandName);
+    if (Environment.GetEnvironmentVariables().Contains("NO_COLOR") &&
+        config.Settings.HelpProviderStyles?.Options is { } options)
+        options.DefaultValue = Style.Plain;
+});
 
 if (args.Contains("--version"))
 {
