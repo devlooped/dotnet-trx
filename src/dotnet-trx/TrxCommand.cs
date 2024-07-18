@@ -27,18 +27,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
     static string Author =>
         $"from [{ThisAssembly.Project.PackageId}]({ThisAssembly.Project.PackageProjectUrl}) on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped)";
 
-    public interface ITrxSettings
-    {
-        bool GitHubComment { get; init; }
-        bool GitHubSummary { get; init; }
-        bool NoExitCode { get; init; }
-        bool Output { get; init; }
-        string? Path { get; init; }
-        bool Recursive { get; init; }
-        bool Skipped { get; init; }
-    }
-
-    public class TrxSettings : CommandSettings, ITrxSettings
+    public class TrxSettings : CommandSettings
     {
         [Description("Optional base directory for *.trx files discovery. Defaults to current directory.")]
         [CommandOption("-p|--path")]
