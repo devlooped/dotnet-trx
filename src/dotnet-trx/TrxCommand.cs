@@ -31,17 +31,17 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
     {
         [Description("Optional base directory for *.trx files discovery. Defaults to current directory.")]
         [CommandOption("-p|--path")]
-        public string? Path { get; init; }
+        public string? Path { get; set; }
 
         [Description("Include test output")]
         [CommandOption("-o|--output")]
         [DefaultValue(false)]
-        public bool Output { get; init; }
+        public bool Output { get; set; }
 
         [Description("Recursively search for *.trx files")]
         [CommandOption("-r|--recursive")]
         [DefaultValue(true)]
-        public bool Recursive { get; init; } = true;
+        public bool Recursive { get; set; } = true;
 
         /// <summary>
         /// Whether to include skipped tests in the output.
@@ -49,7 +49,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [Description("Include skipped tests")]
         [CommandOption("--skipped")]
         [DefaultValue(true)]
-        public bool Skipped { get; init; } = true;
+        public bool Skipped { get; set; } = true;
 
         /// <summary>
         /// Whether to return a -1 exit code on test failures.
@@ -57,7 +57,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [Description("Do not return a -1 exit code on test failures")]
         [CommandOption("--no-exit-code")]
         [DefaultValue(false)]
-        public bool NoExitCode { get; init; } = false;
+        public bool NoExitCode { get; set; } = false;
 
         /// <summary>
         /// Report as GitHub PR comment.
@@ -65,7 +65,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [Description("Report as GitHub PR comment")]
         [CommandOption("--gh-comment")]
         [DefaultValue(true)]
-        public bool GitHubComment { get; init; } = true;
+        public bool GitHubComment { get; set; } = true;
 
         /// <summary>
         /// Report as GitHub PR comment.
@@ -73,7 +73,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [Description("Report as GitHub step summary")]
         [CommandOption("--gh-summary")]
         [DefaultValue(true)]
-        public bool GitHubSummary { get; init; } = true;
+        public bool GitHubSummary { get; set; } = true;
     }
 
     public override int Execute(CommandContext context, TrxSettings settings)
