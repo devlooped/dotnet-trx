@@ -23,6 +23,9 @@ if (args.Contains("--debug"))
 app.Configure(config =>
 {
     config.SetApplicationName(ThisAssembly.Project.ToolCommandName);
+    // Causes -v|--version to be added to help
+    config.SetApplicationVersion(ThisAssembly.Project.Version);
+
     if (Environment.GetEnvironmentVariables().Contains("NO_COLOR") &&
         config.Settings.HelpProviderStyles?.Options is { } options)
         options.DefaultValue = Style.Plain;

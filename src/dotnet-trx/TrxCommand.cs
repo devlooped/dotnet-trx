@@ -59,10 +59,6 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [DefaultValue(false)]
         public bool NoExitCode { get; init; } = false;
 
-        [Description("Show version information")]
-        [CommandOption("--version")]
-        public bool? Version { get; init; }
-
         /// <summary>
         /// Report as GitHub PR comment.
         /// </summary>
