@@ -55,18 +55,13 @@
 	weak
 [file ".github/workflows/includes.yml"]
 	url = https://github.com/devlooped/oss/blob/main/.github/workflows/includes.yml
-	sha = 5fb172362c767bef7c36478f1a6bdc264723f8f9
-	etag = e5ee22e115c925fb85ec931cda3ac811fcc453c03904554fa3f573935b221d34
+	sha = d152e7437fd0d6f6d9363d23cb3b78c07335ea49
+	etag = ec40db34f379d0c6d83b2ec15624f330318a172cc4f85b5417c63e86eaf601df
 	weak
 [file ".github/workflows/publish.yml"]
 	url = https://github.com/devlooped/oss/blob/main/.github/workflows/publish.yml
-	sha = 40ee833a83d843c242914599e2635ca9a05aa837
-	etag = 105db682c332b2bb0873e60a7d2da45b00fe7d83da0f0e7dbf9a84bc5be77c25
-	weak
-[file ".github/workflows/test/action.yml"]
-	url = https://github.com/devlooped/oss/blob/main/.github/workflows/test/action.yml
-	sha = 9a1b07589b9bde93bc12528e9325712a32dec418
-	etag = b54216ac431a83ce5477828d391f02046527e7f6fffd21da1d03324d352c3efb
+	sha = b5bb972199aa6ff220dda196588b23c21bb2780f
+	etag = 5a85d51e8c6cc6fbda43e12b3712a1e908a8e99b0908c4033ac9f4c66e5f233e
 	weak
 [file ".gitignore"]
 	url = https://github.com/devlooped/oss/blob/main/.gitignore
@@ -75,8 +70,8 @@
 	weak
 [file "Directory.Build.rsp"]
 	url = https://github.com/devlooped/oss/blob/main/Directory.Build.rsp
-	sha = ae25fae9d7daf0cb47d537ba870914aa3052f0c9
-	etag = 6a6c6e1d3895df953abf14c82b0899e3eea75cdcd679f6212dcfea15183d73d6
+	sha = 0f7f7f7e8a29de9b535676f75fe7c67e629a5e8c
+	etag = 0ccae83fc51f400bfd7058170bfec7aba11455e24a46a0d7e6a358da6486e255
 	weak
 [file "_config.yml"]
 	url = https://github.com/devlooped/oss/blob/main/_config.yml
