@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.4.3](https://github.com/devlooped/dotnet-trx/tree/v0.4.3) (2024-07-29)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.4.2...v0.4.3)
+
+:sparkles: Implemented enhancements:
+
+- Restore formatting and links for errors, escape per line [\#34](https://github.com/devlooped/dotnet-trx/pull/34) (@kzu)
+
 ## [v0.4.2](https://github.com/devlooped/dotnet-trx/tree/v0.4.2) (2024-07-29)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.4.1...v0.4.2)
