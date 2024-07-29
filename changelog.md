@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.4.2](https://github.com/devlooped/dotnet-trx/tree/v0.4.2) (2024-07-29)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.4.1...v0.4.2)
+
+:bug: Fixed bugs:
+
+- Escape markup in CLI output from errors too [\#33](https://github.com/devlooped/dotnet-trx/pull/33) (@kzu)
+
 ## [v0.4.1](https://github.com/devlooped/dotnet-trx/tree/v0.4.1) (2024-07-17)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.4.0...v0.4.1)
