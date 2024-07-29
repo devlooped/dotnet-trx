@@ -445,7 +445,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         var error = new Panel(
             $"""
             [red]{message.EscapeMarkup()}[/]
-            [dim]{cli}[/]
+            [dim]{cli.ToString().EscapeMarkup()}[/]
             """);
         error.Padding = new Padding(5, 0, 0, 0);
         error.Border = BoxBorder.None;
