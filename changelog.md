@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.4.4](https://github.com/devlooped/dotnet-trx/tree/v0.4.4) (2024-07-31)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.4.3...v0.4.4)
+
+:sparkles: Implemented enhancements:
+
+- Fix markup style error if test contains \[ or \] [\#36](https://github.com/devlooped/dotnet-trx/pull/36) (@kzu)
+- Render trx version in GH comment [\#35](https://github.com/devlooped/dotnet-trx/pull/35) (@kzu)
+
 ## [v0.4.3](https://github.com/devlooped/dotnet-trx/tree/v0.4.3) (2024-07-29)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.4.2...v0.4.3)
