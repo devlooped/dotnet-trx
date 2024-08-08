@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.4.5](https://github.com/devlooped/dotnet-trx/tree/v0.4.5) (2024-08-08)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.4.4...v0.4.5)
+
+:sparkles: Implemented enhancements:
+
+- Fix whitespace in elapsed time badge [\#37](https://github.com/devlooped/dotnet-trx/pull/37) (@kzu)
+
 ## [v0.4.4](https://github.com/devlooped/dotnet-trx/tree/v0.4.4) (2024-07-31)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.4.3...v0.4.4)
