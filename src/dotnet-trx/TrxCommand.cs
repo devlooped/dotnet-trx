@@ -298,6 +298,8 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
         static StringBuilder AppendBadges(Summary summary, StringBuilder builder, string elapsed, string? jobUrl)
         {
+            elapsed = elapsed.Replace(" ", "%20");
+
             // ![5 passed](https://img.shields.io/badge/❌-linux%20in%2015m%206s-blue) ![5 passed](https://img.shields.io/badge/os-macOS%20✅-blue)
             if (summary.Failed > 0)
                 builder.Append(Link($"![{summary.Failed} failed](https://img.shields.io/badge/❌-{Runtime}%20in%20{elapsed}-blue)", jobUrl));
