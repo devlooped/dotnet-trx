@@ -22,7 +22,6 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 {
     const string Header = "<!-- header -->";
     const string Footer = "<!-- footer -->";
-    const string Signature = "<!-- trx -->";
 
     static string Author =>
         $"from [{ThisAssembly.Project.PackageId}]({ThisAssembly.Project.PackageProjectUrl}) v{ThisAssembly.Project.Version} on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped)";
@@ -375,8 +374,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         }
 
         if (settings.GitHubSummary &&
-            Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY") is { Length: > 0 } summaryPath &&
-            File.Exists(summaryPath))
+            Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY") is { Length: > 0 } summaryPath)
         {
             File.AppendAllText(summaryPath,
                 AppendBadges(summary, new(), elapsed, jobUrl)
