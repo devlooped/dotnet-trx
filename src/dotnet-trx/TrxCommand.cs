@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Devlooped.Web;
 using Humanizer;
-using NuGet.Common;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using static Devlooped.Process;
@@ -77,6 +76,9 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
     public override int Execute(CommandContext context, TrxSettings settings)
     {
+        if (Environment.GetEnvironmentVariable("RUNNER_DEBUG") == "1")
+            WriteLine(JsonSerializer.Serialize(new { settings }, new JsonSerializerOptions { WriteIndented = true }));
+
         var path = settings.Path ?? Directory.GetCurrentDirectory();
         if (!Path.IsPathFullyQualified(path))
             path = Path.Combine(Directory.GetCurrentDirectory(), path);
