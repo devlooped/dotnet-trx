@@ -40,8 +40,8 @@
 	skip
 [file ".github/workflows/changelog.config"]
 	url = https://github.com/devlooped/oss/blob/main/.github/workflows/changelog.config
-	sha = 055a8b7c94b74ae139cce919d60b83976d2a9942
-	etag = ddb17acb5872e9e69a76f9dec0ca590f25382caa2ccf750df058dcabb674db2b
+	sha = 08d83cb510732f861416760d37702f9f55bd7f9e
+	etag = 556a28914eeeae78ca924b1105726cdaa211af365671831887aec81f5f4301b4
 	weak
 [file ".github/workflows/changelog.yml"]
 	url = https://github.com/devlooped/oss/blob/main/.github/workflows/changelog.yml
@@ -97,4 +97,9 @@
 	url = https://github.com/devlooped/oss/blob/main/src/Directory.Build.targets
 	sha = 33a20db26e47589769284817b271ce67ea9ccfd8
 	etag = 1a3a0151b5771ee97ed8351254ff4c18a0ff568e0df5c33c6830f069bfbb067b
+	weak
+[file ".github/workflows/stale.yml"]
+	url = https://github.com/devlooped/oss/blob/main/.github/workflows/stale.yml
+	sha = 03b7d535f782ceaf918eeea82ca374bc8c93288a
+	etag = 1efabca4a7436d756e8d24e616a8ecda54f55b49eab623168149f042131e67d6
 	weak
