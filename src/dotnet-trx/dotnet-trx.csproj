@@ -35,11 +35,11 @@
     <ProjectProperty Include="PackageProjectUrl" />
   </ItemGroup>
 
-   <Target Name="RenderHelp" AfterTargets="Build" Condition="$(DesignTimeBuild) != 'true'" >
-     <WriteLinesToFile Lines="```shell" Overwrite="true" File="help.md" />
-     <Exec Command="dotnet run --no-build -- --help &gt;&gt; help.md" 
-           EnvironmentVariables="NO_COLOR=true" />
-     <WriteLinesToFile Lines="```" Overwrite="false" File="help.md" />
-   </Target>
+  <Target Name="RenderHelp" AfterTargets="Build" Condition="$(DesignTimeBuild) != 'true'">
+    <WriteLinesToFile Lines="```shell" Overwrite="true" Encoding="UTF-8" File="help.md" />
+    <Exec Command="dotnet run --no-build -- --help &gt;&gt; help.md" StdOutEncoding="UTF-8"
+          EnvironmentVariables="NO_COLOR=true" />
+    <WriteLinesToFile Lines="```" Overwrite="false" Encoding="UTF-8" File="help.md" />
+  </Target>
 
 </Project>

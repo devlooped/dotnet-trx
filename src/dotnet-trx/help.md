@@ -1,4 +1,4 @@
-```shell
+﻿```shell
 USAGE:
     trx [OPTIONS]
 
