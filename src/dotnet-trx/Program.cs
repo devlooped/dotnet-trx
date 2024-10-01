@@ -26,9 +26,8 @@ app.Configure(config =>
     // Causes -v|--version to be added to help
     config.SetApplicationVersion(ThisAssembly.Project.Version);
 
-    if (Environment.GetEnvironmentVariables().Contains("NO_COLOR") &&
-        config.Settings.HelpProviderStyles?.Options is { } options)
-        options.DefaultValue = Style.Plain;
+    if (Environment.GetEnvironmentVariables().Contains("NO_COLOR"))
+        config.Settings.HelpProviderStyles = null;
 });
 
 if (args.Contains("--version"))
