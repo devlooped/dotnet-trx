@@ -79,7 +79,7 @@ jobs:
           dotnet run --no-build --project ./src/dotnet-trx/ --output || echo Nevermind!
 
       - name: 🐛 logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: runner.debug && always()
         with:
           name: logs
