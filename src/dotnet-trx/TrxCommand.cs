@@ -38,6 +38,10 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
     public class TrxSettings : CommandSettings
     {
+        [Description("Prints version information")]
+        [CommandOption("--version")]
+        public bool Version { get; init; }
+
         [Description("Optional base directory for *.trx files discovery. Defaults to current directory.")]
         [CommandOption("-p|--path")]
         public string? Path { get; set; }
