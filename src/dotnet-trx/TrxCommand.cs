@@ -26,6 +26,16 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
     static string Author =>
         $"from [{ThisAssembly.Project.PackageId}]({ThisAssembly.Project.PackageProjectUrl}) v{ThisAssembly.Project.Version} on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped)";
 
+    public enum Verbosity
+    {
+        [Description("Only failed tests are displayed")]
+        Quiet,
+        [Description("Failed and skipped tests are displayed")]
+        Normal,
+        [Description("Failed, skipped and passed tests are displayed")]
+        Verbose,
+    }
+
     public class TrxSettings : CommandSettings
     {
         [Description("Optional base directory for *.trx files discovery. Defaults to current directory.")]
@@ -43,20 +53,41 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         public bool Recursive { get; set; } = true;
 
         /// <summary>
+        /// Output verbosity.
+        /// </summary>
+        [Description(
+            """
+            Output display verbosity:
+            - quiet: only failed tests are displayed
+            - normal: failed and skipped tests are displayed
+            - verbose: failed, skipped and passed tests are displayed
+            """)]
+        [CommandOption("-v|--verbosity <quiet|normal|verbose>")]
+        [DefaultValue(Verbosity.Quiet)]
+        public Verbosity Verbosity { get; set; } = Verbosity.Quiet;
+
+        /// <summary>
         /// Whether to include skipped tests in the output.
         /// </summary>
-        [Description("Include skipped tests")]
-        [CommandOption("--skipped")]
+        [Description("Include skipped tests in output")]
+        [CommandOption("--skipped", IsHidden = true)]
         [DefaultValue(true)]
-        public bool Skipped { get; set; } = true;
+        public bool Skipped
+        {
+            get => Verbosity != Verbosity.Quiet;
+            set
+            {
+                if (!value)
+                    Verbosity = Verbosity.Quiet;
+            }
+        }
 
         /// <summary>
         /// Whether to return a -1 exit code on test failures.
         /// </summary>
         [Description("Do not return a -1 exit code on test failures")]
         [CommandOption("--no-exit-code")]
-        [DefaultValue(false)]
-        public bool NoExitCode { get; set; } = false;
+        public bool NoExitCode { get; set; }
 
         /// <summary>
         /// Report as GitHub PR comment.
@@ -146,6 +177,9 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
                 case "Passed":
                     passed++;
                     duration += elapsed;
+                    if (settings.Verbosity != Verbosity.Verbose)
+                        break;
+
                     MarkupLine($":check_mark_button: {test}");
                     if (output == null)
                         details.AppendLine($":white_check_mark: {test}");
@@ -181,10 +215,10 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
                     details.AppendLine().AppendLine("</details>").AppendLine();
                     break;
                 case "NotExecuted":
-                    if (!settings.Skipped)
+                    skipped++;
+                    if (settings.Verbosity == Verbosity.Quiet)
                         break;
 
-                    skipped++;
                     var reason = result.CssSelectElement("Output > ErrorInfo > Message")?.Value;
                     Markup($"[dim]:white_question_mark: {test}[/]");
                     details.Append($":grey_question: {test}");
