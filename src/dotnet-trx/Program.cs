@@ -30,7 +30,7 @@ app.Configure(config =>
         config.Settings.HelpProviderStyles = null;
 });
 
-if (args.Contains("--version"))
+if (args.Contains("--version") || args.Contains("-v"))
 {
     AnsiConsole.MarkupLine($"{ThisAssembly.Project.ToolCommandName} version [lime]{ThisAssembly.Project.Version}[/] ({ThisAssembly.Project.BuildDate})");
     AnsiConsole.MarkupLine($"[link]{ThisAssembly.Git.Url}/releases/tag/{ThisAssembly.Project.BuildRef}[/]");
