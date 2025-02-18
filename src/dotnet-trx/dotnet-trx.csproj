@@ -37,8 +37,7 @@
 
   <Target Name="RenderHelp" AfterTargets="Build" Condition="$(DesignTimeBuild) != 'true'">
     <WriteLinesToFile Lines="```shell" Overwrite="true" Encoding="UTF-8" File="help.md" />
-    <Exec Command="dotnet run --no-build -- --help &gt;&gt; help.md" StdOutEncoding="UTF-8"
-          EnvironmentVariables="NO_COLOR=true" />
+    <Exec Command="dotnet run --no-build --no-launch-profile -- --help &gt;&gt; help.md" StdOutEncoding="UTF-8" EnvironmentVariables="NO_COLOR=true" />
     <WriteLinesToFile Lines="```" Overwrite="false" Encoding="UTF-8" File="help.md" />
   </Target>
 
