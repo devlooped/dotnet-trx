@@ -38,6 +38,9 @@ public class Tests(ITestOutputHelper output)
         runner();
     }
 
+    [Fact(Skip = "Ignored")]
+    public void Ignored() { }
+
     [PlatformFact(PlatformID.Win32NT)]
     public void WindowsOnlyTest() => output.WriteLine("This test runs only on Windows");
 
