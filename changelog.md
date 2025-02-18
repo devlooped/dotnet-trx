@@ -1,5 +1,35 @@
 # Changelog
 
+## [v0.5.0](https://github.com/devlooped/dotnet-trx/tree/v0.5.0) (2025-02-18)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.4.5...v0.5.0)
+
+:sparkles: Implemented enhancements:
+
+- Quieter output by default [\#73](https://github.com/devlooped/dotnet-trx/pull/73) (@kzu)
+- Improve path validation and reporting markup escaping [\#66](https://github.com/devlooped/dotnet-trx/pull/66) (@kzu)
+- Always append summary even if file doesn't exist [\#42](https://github.com/devlooped/dotnet-trx/pull/42) (@kzu)
+
+:bug: Fixed bugs:
+
+- \[Ignore\] attribute on test causes "Object reference not set to an instance of an object" exception [\#65](https://github.com/devlooped/dotnet-trx/issues/65)
+- Sample action for github [\#64](https://github.com/devlooped/dotnet-trx/issues/64)
+- System.InvalidOperationException: Unbalanced markup stack [\#63](https://github.com/devlooped/dotnet-trx/issues/63)
+- trx -v does not produce version info [\#58](https://github.com/devlooped/dotnet-trx/issues/58)
+- Error: Object reference not set to an instance of an object. [\#57](https://github.com/devlooped/dotnet-trx/issues/57)
+- Don't fail for non-executed tests which have no `duration` value [\#71](https://github.com/devlooped/dotnet-trx/pull/71) (@kzu)
+- Render version with -v too [\#70](https://github.com/devlooped/dotnet-trx/pull/70) (@kzu)
+
+:hammer: Other:
+
+- Add flag to report only failed tests [\#59](https://github.com/devlooped/dotnet-trx/issues/59)
+
+:twisted_rightwards_arrows: Merged:
+
+- Ignore launch profile when generating help markdown [\#72](https://github.com/devlooped/dotnet-trx/pull/72) (@kzu)
+- Remove previous workaround for styles [\#47](https://github.com/devlooped/dotnet-trx/pull/47) (@kzu)
+- Improve style disable when NO\_COLOR [\#44](https://github.com/devlooped/dotnet-trx/pull/44) (@kzu)
+
 ## [v0.4.5](https://github.com/devlooped/dotnet-trx/tree/v0.4.5) (2024-08-08)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.4.4...v0.4.5)
