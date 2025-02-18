@@ -62,7 +62,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             - normal: failed and skipped tests are displayed
             - verbose: failed, skipped and passed tests are displayed
             """)]
-        [CommandOption("-v|--verbosity <quiet|normal|verbose>")]
+        [CommandOption("-v|--verbosity")]
         [DefaultValue(Verbosity.Quiet)]
         public Verbosity Verbosity { get; set; } = Verbosity.Quiet;
 
