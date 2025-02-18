@@ -138,7 +138,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         foreach (var result in results)
         {
             var test = result.Attribute("testName")!.Value.EscapeMarkup();
-            var elapsed = TimeSpan.Parse(result.Attribute("duration")!.Value);
+            var elapsed = TimeSpan.Parse(result.Attribute("duration")?.Value ?? "0");
             var output = settings.Output ? result.CssSelectElement("StdOut")?.Value : default;
 
             switch (result.Attribute("outcome")?.Value)
