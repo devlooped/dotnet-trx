@@ -19,6 +19,7 @@ namespace Devlooped;
 
 public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 {
+    static readonly JsonSerializerOptions indentedJson = new() { WriteIndented = true };
     const string Header = "<!-- header -->";
     const string Footer = "<!-- footer -->";
 
@@ -72,22 +73,27 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [CommandOption("--gh-summary")]
         [DefaultValue(true)]
         public bool GitHubSummary { get; set; } = true;
+
+        public override ValidationResult Validate()
+        {
+            // Validate, normalize and default path.
+            var path = Path ?? Directory.GetCurrentDirectory();
+            if (!System.IO.Path.IsPathFullyQualified(path))
+                path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), path);
+
+            Path = File.Exists(path) ? new FileInfo(path).DirectoryName! : System.IO.Path.GetFullPath(path);
+
+            return base.Validate();
+        }
     }
 
     public override int Execute(CommandContext context, TrxSettings settings)
     {
         if (Environment.GetEnvironmentVariable("RUNNER_DEBUG") == "1")
-            WriteLine(JsonSerializer.Serialize(new { settings }, new JsonSerializerOptions { WriteIndented = true }));
+            WriteLine(JsonSerializer.Serialize(new { settings }, indentedJson));
 
-        var path = settings.Path ?? Directory.GetCurrentDirectory();
-        if (!Path.IsPathFullyQualified(path))
-            path = Path.Combine(Directory.GetCurrentDirectory(), path);
-
-        if (File.Exists(path))
-            path = new FileInfo(path).DirectoryName!;
-        else
-            path = Path.GetFullPath(path);
-
+        // We get this validated by the settings, so it's always non-null.
+        var path = settings.Path!;
         var search = settings.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
         var testIds = new HashSet<string>();
         var passed = 0;
@@ -112,7 +118,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
             // Process from newest files to oldest so that newest result we find (by test id) is the one we keep
             foreach (var trx in Directory.EnumerateFiles(path, "*.trx", search).OrderByDescending(File.GetLastWriteTime))
             {
-                ctx.Status($"Discovering test results in {Path.GetFileName(trx)}...");
+                ctx.Status($"Discovering test results in {Path.GetFileName(trx).EscapeMarkup()}...");
                 using var file = File.OpenRead(trx);
                 // Clears namespaces
                 var doc = HtmlDocument.Load(file, new HtmlReaderSettings { CaseFolding = Sgml.CaseFolding.None });
