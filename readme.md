@@ -39,7 +39,7 @@ USAGE:
 OPTIONS:
                           DEFAULT                                               
     -h, --help                       Prints help information                    
-    -v, --version                    Prints version information                 
+        --version                    Prints version information                 
     -p, --path                       Optional base directory for *.trx files    
                                      discovery. Defaults to current directory   
     -o, --output                     Include test output                        
