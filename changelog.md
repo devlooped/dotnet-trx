@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.5.2](https://github.com/devlooped/dotnet-trx/tree/v0.5.2) (2025-03-02)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.5.1...v0.5.2)
+
+:twisted_rightwards_arrows: Merged:
+
+- Add mention to @devlooped for visibility [\#81](https://github.com/devlooped/dotnet-trx/pull/81) (@kzu)
+
 ## [v0.5.1](https://github.com/devlooped/dotnet-trx/tree/v0.5.1) (2025-02-18)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.5.0...v0.5.1)
