@@ -24,7 +24,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
     const string Footer = "<!-- footer -->";
 
     static string Author =>
-        $"from [{ThisAssembly.Project.PackageId}]({ThisAssembly.Project.PackageProjectUrl}) v{ThisAssembly.Project.Version} on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped)";
+        $"from [{ThisAssembly.Project.PackageId}]({ThisAssembly.Project.PackageProjectUrl}) v{ThisAssembly.Project.Version} on {RuntimeInformation.FrameworkDescription} with [:purple_heart:](https://github.com/sponsors/devlooped) by @devlooped";
 
     public enum Verbosity
     {
