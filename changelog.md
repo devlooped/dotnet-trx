@@ -1,5 +1,21 @@
 # Changelog
 
+## [v1.0.1](https://github.com/devlooped/dotnet-trx/tree/v1.0.1) (2025-09-29)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v1.0.0...v1.0.1)
+
+:sparkles: Implemented enhancements:
+
+- Align with future envvar for job id [\#94](https://github.com/devlooped/dotnet-trx/pull/94) (@kzu)
+
+:bug: Fixed bugs:
+
+- Fix job url fetching from run [\#93](https://github.com/devlooped/dotnet-trx/pull/93) (@kzu)
+
+:twisted_rightwards_arrows: Merged:
+
+- Allow running on whatever latest .NET version users have [\#92](https://github.com/devlooped/dotnet-trx/pull/92) (@kzu)
+
 ## [v1.0.0](https://github.com/devlooped/dotnet-trx/tree/v1.0.0) (2025-09-29)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v1.0.0-beta...v1.0.0)
