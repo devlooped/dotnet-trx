@@ -1,5 +1,23 @@
 # Changelog
 
+## [v1.0.0-beta](https://github.com/devlooped/dotnet-trx/tree/v1.0.0-beta) (2025-09-29)
+
+[Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.5.2...v1.0.0-beta)
+
+:sparkles: Implemented enhancements:
+
+- Include className in output [\#14](https://github.com/devlooped/dotnet-trx/issues/14)
+- When writing GH comment summary, include error message [\#90](https://github.com/devlooped/dotnet-trx/pull/90) (@kzu)
+
+:bug: Fixed bugs:
+
+- ErrorInfo.Message not displayed [\#85](https://github.com/devlooped/dotnet-trx/issues/85)
+
+:hammer: Other:
+
+- Request dotnet 9 compability [\#82](https://github.com/devlooped/dotnet-trx/issues/82)
+- Remove dependency to Humanizer [\#79](https://github.com/devlooped/dotnet-trx/issues/79)
+
 ## [v0.5.2](https://github.com/devlooped/dotnet-trx/tree/v0.5.2) (2025-03-02)
 
 [Full Changelog](https://github.com/devlooped/dotnet-trx/compare/v0.5.1...v0.5.2)
