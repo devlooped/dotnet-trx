@@ -5,7 +5,6 @@
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Devlooped</RootNamespace>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <RollForward>Major</RollForward>
     <ToolCommandName>trx</ToolCommandName>
     <PackageId>dotnet-trx</PackageId>
     <Description>Pretty-print test results in TRX format</Description>
@@ -15,6 +14,9 @@
     <PackAsTool>true</PackAsTool>
     <BuildDate>$([System.DateTime]::Now.ToString("yyyy-MM-dd"))</BuildDate>
     <BuildRef>$(GITHUB_REF_NAME)</BuildRef>
+
+    <!-- Allow running on whatever latest version users have. See https://docs.microsoft.com/en-us/dotnet/core/versions/selection#framework-dependent-apps-roll-forward -->
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 
   <ItemGroup>
