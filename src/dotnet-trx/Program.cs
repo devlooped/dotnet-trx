@@ -51,7 +51,7 @@ return exit;
 
 static async Task<string[]> CheckUpdates(string[] args)
 {
-    if (args.Contains("-u") && !args.Contains("--unattended"))
+    if (args.Contains("-u") || args.Contains("--unattended"))
         return [];
 
     var providers = Repository.Provider.GetCoreV3();
