@@ -318,7 +318,8 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
         // Some day, it might just show-up and we'd be forwards compatible. 
         // See https://github.com/orgs/community/discussions/129314 and https://github.com/actions/runner/issues/324
-        var jobId = Environment.GetEnvironmentVariable("GITHUB_JOB_ID");
+        // Pending PR that introduces this envvar: https://github.com/actions/runner/pull/4053
+        var jobId = Environment.GetEnvironmentVariable("JOB_CHECK_RUN_ID");
 
         // Provide a mechanism that would work on matrix in the meantime
         if (Environment.GetEnvironmentVariable("GH_JOB_NAME") is { Length: > 0 } ghJobName)
