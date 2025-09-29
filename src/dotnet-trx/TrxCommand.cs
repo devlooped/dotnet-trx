@@ -334,7 +334,7 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         long commentId = 0;
 
         if (jobUrl == null && TryExecute("gh",
-            ["api", $"repos/devlooped/dotnet-trx/actions/runs/{runId}/jobs", "--jq", $"[.jobs[] | select(.name == \"{jobName}\") | .id]"],
+            ["api", $"repos/{repo}/actions/runs/{runId}/jobs", "--jq", $"[.jobs[] | select(.name == \"{jobName}\") | .id]"],
             out var jobsJson) && jobsJson != null && JsonSerializer.Deserialize<long[]>(jobsJson) is { Length: 1 } jobIds)
         {
             jobUrl = $"{serverUrl}/{repo}/actions/runs/{runId}/job/{jobIds[0]}?pr={pr}";
