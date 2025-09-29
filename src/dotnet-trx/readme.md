@@ -9,9 +9,9 @@ code is freely available under the terms of the
 this package and other aspects of the project require 
 [adherence to the Maintenance Fee](https://github.com/devlooped/dotnet-trx/blob/main/osmfeula.txt).
 
-In short, if you use this project to generate revenue, the [Maintenance Fee is required](https://github.com/devlooped/SmallSharp/blob/main/osmfeula.txt).
+In short, if you use this project to generate revenue, the [Maintenance Fee is required](https://github.com/devlooped/dotnet-trx/blob/main/osmfeula.txt).
 
-To pay the Maintenance Fee, [become a Sponsor](https://github.com/sponsors/devlooped).
+To pay the Maintenance Fee, [become a Sponsor](https://github.com/sponsors/devlooped) at the corresponding OSMF tier (starting at just $10!).
 
 <!-- include https://github.com/devlooped/sponsors/raw/main/footer.md -->
 <!-- exclude -->
