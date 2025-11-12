@@ -43,7 +43,7 @@ jobs:
 
           $product = dotnet msbuild $props -getproperty:Product
           if (-not $product) { 
-            write-error "To use OSMF EULA, ensure the $(Product) property is set in Directory.props"
+            write-error 'To use OSMF EULA, ensure the $(Product) property is set in Directory.props'
             exit 1
           }
           
@@ -58,7 +58,7 @@ jobs:
           base: main
           branch: markdown-includes
           delete-branch: true
-          labels: docs
+          labels: dependencies
           author: ${{ env.BOT_AUTHOR }}
           committer: ${{ env.BOT_AUTHOR }}
           commit-message: +Mᐁ includes
