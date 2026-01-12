@@ -109,6 +109,14 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [DefaultValue(true)]
         public bool GitHubSummary { get; set; } = true;
 
+        [Description("Only use the most recently modified TRX file")]
+        [CommandOption("--only-latest")]
+        public bool OnlyLatest { get; set; }
+
+        [Description("Specify specific TRX files to include (reads all files until the next -- flag)")]
+        [CommandOption("--only-files")]
+        public string[]? OnlyFiles { get; set; }
+
         public override ValidationResult Validate()
         {
             // Validate, normalize and default path.
@@ -150,8 +158,31 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
         Status().Start("Discovering test results...", ctx =>
         {
+            IEnumerable<string> files;
+
+            if (settings.OnlyFiles is { Length: > 0 } onlyFiles)
+            {
+                files = onlyFiles.Select(f =>
+                {
+                    var p1 = System.IO.Path.Combine(path, f);
+                    if (File.Exists(p1)) return p1;
+                    var p2 = System.IO.Path.Combine(Directory.GetCurrentDirectory(), f);
+                    if (File.Exists(p2)) return p2;
+                    return f;
+                });
+            }
+            else
+            {
+                files = Directory.EnumerateFiles(path, "*.trx", search);
+            }
+
+            files = files.OrderByDescending(File.GetLastWriteTime);
+
+            if (settings.OnlyLatest)
+                files = files.Take(1);
+
             // Process from newest files to oldest so that newest result we find (by test id) is the one we keep
-            foreach (var trx in Directory.EnumerateFiles(path, "*.trx", search).OrderByDescending(File.GetLastWriteTime))
+            foreach (var trx in files)
             {
                 ctx.Status($"Discovering test results in {Path.GetFileName(trx).EscapeMarkup()}...");
                 using var file = File.OpenRead(trx);

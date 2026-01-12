@@ -20,4 +20,8 @@ OPTIONS:
                                      failures                                   
         --gh-comment      True       Report as GitHub PR comment                
         --gh-summary      True       Report as GitHub step summary              
+        --only-latest                Only use the most recently modified TRX    
+                                     file                                       
+        --only-files                 Specify specific TRX files to include      
+                                     (reads all files until the next -- flag)   
 ```
