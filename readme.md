@@ -39,6 +39,10 @@ trx --only-latest
 --only-files - Specify specific TRX files to include (reads all files until the next -- flag):
 
 trx --only-files test1.trx test2.trx
+
+--only-tests - Specify one or more tests (until next -- flag) that are the only tests included in the output report rather than all the tests:
+
+trx --only-tests Test1 Test2
 The --only-files option supports both absolute and relative paths. Relative paths are first tried against the trx directory, then fall back to the current working directory.
 
 <!-- include src/dotnet-trx/help.md -->

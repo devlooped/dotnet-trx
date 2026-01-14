@@ -24,4 +24,7 @@ OPTIONS:
                                      file                                       
         --only-files                 Specify specific TRX files to include      
                                      (reads all files until the next -- flag)   
+        --only-tests                 Specify one or more tests (until next --   
+                                     flag) that are the only tests included in  
+                                     the output report rather than all the tests
 ```

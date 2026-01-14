@@ -117,6 +117,10 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [CommandOption("--only-files")]
         public string[]? OnlyFiles { get; set; }
 
+        [Description("Specify one or more tests (until next -- flag) that are the only tests included in the output report rather than all the tests")]
+        [CommandOption("--only-tests")]
+        public string[]? OnlyTests { get; set; }
+
         public override ValidationResult Validate()
         {
             // Validate, normalize and default path.
@@ -190,6 +194,11 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
                 var doc = HtmlDocument.Load(file, new HtmlReaderSettings { CaseFolding = Sgml.CaseFolding.None });
                 foreach (var result in doc.CssSelectElements("UnitTestResult"))
                 {
+                    if (settings.OnlyTests is { Length: > 0 } onlyTests &&
+                        result.Attribute("testName")?.Value is string name &&
+                        !onlyTests.Contains(name))
+                        continue;
+
                     var id = result.Attribute("testId")!.Value;
                     // Process only once per test id, this avoids duplicates when multiple trx files are processed
                     if (testIds.Add(id))
