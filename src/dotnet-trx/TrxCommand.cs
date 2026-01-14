@@ -42,6 +42,14 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [CommandOption("--version")]
         public bool Version { get; init; }
 
+        [Description("Do not output VT/ANSI formatting codes or progress status messages (emojis are still shown). No update check.")]
+        [CommandOption("--batch")]
+        public bool BatchMode { get; set; }
+
+        [Description("No update check")]
+        [CommandOption("-u|--no-updates")]
+        public bool NoUpdates { get; set; }
+
         [Description("Optional base directory for *.trx files discovery. Defaults to current directory.")]
         [CommandOption("-p|--path")]
         public string? Path { get; set; }
@@ -136,13 +144,16 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
     public override int Execute(CommandContext context, TrxSettings settings)
     {
+        // these should have already been handled but just incase
+        ConsoleMode.BatchMode |= settings.BatchMode;
+        ConsoleMode.NoUpdates |= settings.NoUpdates;
+
         if (Environment.GetEnvironmentVariable("RUNNER_DEBUG") == "1")
             WriteLine(JsonSerializer.Serialize(new { settings }, indentedJson));
 
         // We get this validated by the settings, so it's always non-null.
         var path = settings.Path!;
         var search = settings.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-        var testIds = new HashSet<string>();
         var passed = 0;
         var failed = 0;
         var skipped = 0;
@@ -160,55 +171,17 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
         var results = new List<XElement>();
 
-        Status().Start("Discovering test results...", ctx =>
+        if (ConsoleMode.BatchMode)
         {
-            IEnumerable<string> files;
-
-            if (settings.OnlyFiles is { Length: > 0 } onlyFiles)
+            results = DiscoverResults(settings, path, search);
+        }
+        else
+        {
+            Status().Start("Discovering test results...", ctx =>
             {
-                files = onlyFiles.Select(f =>
-                {
-                    var p1 = System.IO.Path.Combine(path, f);
-                    if (File.Exists(p1)) return p1;
-                    var p2 = System.IO.Path.Combine(Directory.GetCurrentDirectory(), f);
-                    if (File.Exists(p2)) return p2;
-                    return f;
-                });
-            }
-            else
-            {
-                files = Directory.EnumerateFiles(path, "*.trx", search);
-            }
-
-            files = files.OrderByDescending(File.GetLastWriteTime);
-
-            if (settings.OnlyLatest)
-                files = files.Take(1);
-
-            // Process from newest files to oldest so that newest result we find (by test id) is the one we keep
-            foreach (var trx in files)
-            {
-                ctx.Status($"Discovering test results in {Path.GetFileName(trx).EscapeMarkup()}...");
-                using var file = File.OpenRead(trx);
-                // Clears namespaces
-                var doc = HtmlDocument.Load(file, new HtmlReaderSettings { CaseFolding = Sgml.CaseFolding.None });
-                foreach (var result in doc.CssSelectElements("UnitTestResult"))
-                {
-                    if (settings.OnlyTests is { Length: > 0 } onlyTests &&
-                        result.Attribute("testName")?.Value is string name &&
-                        !onlyTests.Contains(name))
-                        continue;
-
-                    var id = result.Attribute("testId")!.Value;
-                    // Process only once per test id, this avoids duplicates when multiple trx files are processed
-                    if (testIds.Add(id))
-                        results.Add(result);
-                }
-            }
-
-            ctx.Status("Sorting tests by name...");
-            results.Sort(new Comparison<XElement>((x, y) => x.Attribute("testName")!.Value.CompareTo(y.Attribute("testName")!.Value)));
-        });
+                results = DiscoverResults(settings, path, search, s => ctx.Status = s);
+            });
+        }
 
         foreach (var result in results)
         {
@@ -528,7 +501,10 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
                 stackTrace.ReplaceLineEndings(),
                 relative, int.Parse(pos));
 
-            cli.AppendLine(line.Replace(file, $"[link={file}][steelblue1_1]{relative}[/][/]"));
+            if (ConsoleMode.BatchMode)
+                cli.AppendLine(line.Replace(file, relative.EscapeMarkup()));
+            else
+                cli.AppendLine(line.Replace(file, $"[link={file}][steelblue1_1]{relative.EscapeMarkup()}[/][/]"));
             // TODO: can we render a useful link in comment details?
             details.AppendLineIndented(line.Replace(file, relative), "> ");
         }
@@ -586,4 +562,58 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
     }
 
     record Failed(string Test, string Title, string Message, string File, int Line);
+
+    static List<XElement> DiscoverResults(TrxSettings settings, string path, SearchOption search, Action<string>? status = null)
+    {
+        var testIds = new HashSet<string>();
+        var results = new List<XElement>();
+
+        IEnumerable<string> files;
+
+        if (settings.OnlyFiles is { Length: > 0 } onlyFiles)
+        {
+            files = onlyFiles.Select(f =>
+            {
+                var p1 = System.IO.Path.Combine(path, f);
+                if (File.Exists(p1)) return p1;
+                var p2 = System.IO.Path.Combine(Directory.GetCurrentDirectory(), f);
+                if (File.Exists(p2)) return p2;
+                return f;
+            });
+        }
+        else
+        {
+            files = Directory.EnumerateFiles(path, "*.trx", search);
+        }
+
+        files = files.OrderByDescending(File.GetLastWriteTime);
+
+        if (settings.OnlyLatest)
+            files = files.Take(1);
+
+        // Process from newest files to oldest so that newest result we find (by test id) is the one we keep
+        foreach (var trx in files)
+        {
+            status?.Invoke($"Discovering test results in {Path.GetFileName(trx).EscapeMarkup()}...");
+            using var file = File.OpenRead(trx);
+            // Clears namespaces
+            var doc = HtmlDocument.Load(file, new HtmlReaderSettings { CaseFolding = Sgml.CaseFolding.None });
+            foreach (var result in doc.CssSelectElements("UnitTestResult"))
+            {
+                if (settings.OnlyTests is { Length: > 0 } onlyTests &&
+                    result.Attribute("testName")?.Value is string name &&
+                    !onlyTests.Contains(name))
+                    continue;
+
+                var id = result.Attribute("testId")!.Value;
+                // Process only once per test id, this avoids duplicates when multiple trx files are processed
+                if (testIds.Add(id))
+                    results.Add(result);
+            }
+        }
+
+        status?.Invoke("Sorting tests by name...");
+        results.Sort(new Comparison<XElement>((x, y) => x.Attribute("testName")!.Value.CompareTo(y.Attribute("testName")!.Value)));
+        return results;
+    }
 }
