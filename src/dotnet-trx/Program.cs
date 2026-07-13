@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -11,11 +12,35 @@ using NuGet.Versioning;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
+ConsoleMode.BatchMode = args.Contains("--batch");
+ConsoleMode.NoColor = Environment.GetEnvironmentVariables().Contains("NO_COLOR") || ConsoleMode.BatchMode;
+ConsoleMode.NoUpdates = args.Contains("--no-updates") || args.Contains("-u") || ConsoleMode.BatchMode;
+
+
+if (ConsoleMode.BatchMode)
+{
+    // Ensure Spectre does not emit any VT/ANSI/OSC sequences (colors, cursor movement, hyperlinks, etc.)
+    AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings
+    {
+        Ansi = AnsiSupport.No,
+        ColorSystem = ColorSystemSupport.NoColors,
+        Interactive = InteractionSupport.No,        
+    });
+    AnsiConsole.Profile.Width = 999999;
+
+}
+
 var app = new CommandApp<TrxCommand>();
 
 // Alias -? to -h for help
-if (args.Contains("-?"))
-    args = args.Select(x => x == "-?" ? "-h" : x).ToArray();
+Dictionary<string,string> MigratedCLI = new() { {"-?","-h"}, {"--unattended","-u" } };
+foreach (var toMigrate in MigratedCLI)
+{
+    var pos = Array.IndexOf(args,toMigrate.Key);
+    if (pos == -1)
+        continue;
+    args[pos] = toMigrate.Value;
+}
 
 if (args.Contains("--debug"))
     Debugger.Launch();
@@ -23,14 +48,18 @@ if (args.Contains("--debug"))
 app.Configure(config =>
 {
     config.SetApplicationName(ThisAssembly.Project.ToolCommandName);
-    if (Environment.GetEnvironmentVariables().Contains("NO_COLOR"))
+    if (ConsoleMode.NoColor)
         config.Settings.HelpProviderStyles = null;
 });
 
 if (args.Contains("--version"))
 {
     AnsiConsole.MarkupLine($"{ThisAssembly.Project.ToolCommandName} version [lime]{ThisAssembly.Project.Version}[/] ({ThisAssembly.Project.BuildDate})");
-    AnsiConsole.MarkupLine($"[link]{ThisAssembly.Git.Url}/releases/tag/{ThisAssembly.Project.BuildRef}[/]");
+
+    if (ConsoleMode.BatchMode)
+        AnsiConsole.WriteLine($"{ThisAssembly.Git.Url}/releases/tag/{ThisAssembly.Project.BuildRef}");
+    else
+        AnsiConsole.MarkupLine($"[link]{ThisAssembly.Git.Url}/releases/tag/{ThisAssembly.Project.BuildRef}[/]");
 
     foreach (var message in await CheckUpdates(args))
         AnsiConsole.MarkupLine(message);
@@ -51,7 +80,7 @@ return exit;
 
 static async Task<string[]> CheckUpdates(string[] args)
 {
-    if (args.Contains("-u") || args.Contains("--unattended"))
+    if (ConsoleMode.NoUpdates)
         return [];
 
     var providers = Repository.Provider.GetCoreV3();

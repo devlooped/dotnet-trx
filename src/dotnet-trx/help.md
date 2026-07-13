@@ -3,21 +3,22 @@ USAGE:
     trx [OPTIONS]
 
 OPTIONS:
-                          DEFAULT                                               
-    -h, --help                       Prints help information                    
-        --version                    Prints version information                 
-    -p, --path                       Optional base directory for *.trx files    
-                                     discovery. Defaults to current directory   
-    -o, --output                     Include test output                        
-    -r, --recursive       True       Recursively search for *.trx files         
-    -v, --verbosity       Quiet      Output display verbosity:                  
-                                     - quiet: only failed tests are displayed   
-                                     - normal: failed and skipped tests are     
-                                     displayed                                  
-                                     - verbose: failed, skipped and passed tests
-                                     are displayed                              
-        --no-exit-code               Do not return a -1 exit code on test       
-                                     failures                                   
-        --gh-comment      True       Report as GitHub PR comment                
-        --gh-summary      True       Report as GitHub step summary              
+                          DEFAULT                                                                                                                                  
+    -h, --help                       Prints help information                                                                                                       
+        --version                    Prints version information                                                                                                    
+        --batch                      Do not output VT/ANSI formatting codes or progress status messages (emojis are still shown). No update check                  
+    -u, --no-updates                 No update check                                                                                                               
+    -p, --path                       Optional base directory for *.trx files discovery. Defaults to current directory                                              
+    -o, --output                     Include test output                                                                                                           
+    -r, --recursive       True       Recursively search for *.trx files                                                                                            
+    -v, --verbosity       Quiet      Output display verbosity:                                                                                                     
+                                     - quiet: only failed tests are displayed                                                                                      
+                                     - normal: failed and skipped tests are displayed                                                                              
+                                     - verbose: failed, skipped and passed tests are displayed                                                                     
+        --no-exit-code               Do not return a -1 exit code on test failures                                                                                 
+        --gh-comment      True       Report as GitHub PR comment                                                                                                   
+        --gh-summary      True       Report as GitHub step summary                                                                                                 
+        --only-latest                Only use the most recently modified TRX file                                                                                  
+        --only-files                 Specify specific TRX files to include (reads all files until the next -- flag)                                                
+        --only-tests                 Specify one or more tests (until next -- flag) that are the only tests included in the output report rather than all the tests
 ```
