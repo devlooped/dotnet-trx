@@ -63,11 +63,12 @@ return exit;
 
 static async Task<string[]> CheckUpdates(string[] args)
 {
-    // Separate from the -u/--unattended scan below so that flag can change independently.
+    // Separate from the -u/--no-updates scan below so that flag can change independently.
     if (args.Contains("--batch"))
         return [];
 
-    if (args.Contains("-u") || args.Contains("--unattended"))
+    // Honored before Spectre runs, including on --version. --unattended is a hidden alias.
+    if (args.Contains("-u") || args.Contains("--no-updates") || args.Contains("--unattended"))
         return [];
 
     var providers = Repository.Provider.GetCoreV3();

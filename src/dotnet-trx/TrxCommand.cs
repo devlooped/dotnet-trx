@@ -46,6 +46,20 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [CommandOption("--batch")]
         public bool Batch { get; set; }
 
+        /// <summary>
+        /// Skip the NuGet update check.
+        /// </summary>
+        [Description("Do not check for updates")]
+        [CommandOption("-u|--no-updates")]
+        public bool NoUpdates { get; set; }
+
+        /// <summary>
+        /// Backwards-compatible alias for <see cref="NoUpdates"/>. Hidden from help.
+        /// </summary>
+        [Description("Do not check for updates")]
+        [CommandOption("--unattended", IsHidden = true)]
+        public bool Unattended { get; set; }
+
         [Description("Optional base directory for *.trx files discovery. Defaults to current directory.")]
         [CommandOption("-p|--path")]
         public string? Path { get; set; }
