@@ -67,6 +67,9 @@ jobs:
       - name: 🙏 build
         run: dotnet build -m:1 -bl:build.binlog
 
+      - name: 🧪 batch
+        run: dotnet test src/dotnet-trx.Tests --nologo
+
       - name: 🧪 test
         # NOTE: we don't really want to fail since this just emits the trx. '
         run: dotnet test -l trx src/Demo/ -v:q || echo Nevermind!
