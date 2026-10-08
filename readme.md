@@ -49,6 +49,7 @@ OPTIONS:
         --batch                      Plain text for scripts and CI. No colors,  
                                      hyperlinks, progress output, or update     
                                      check. Emojis are still shown              
+    -u, --no-updates                 Do not check for updates                   
     -p, --path                       Optional base directory for *.trx files    
                                      discovery. Defaults to current directory   
     -o, --output                     Include test output                        
