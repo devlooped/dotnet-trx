@@ -6,6 +6,9 @@ OPTIONS:
                           DEFAULT                                               
     -h, --help                       Prints help information                    
         --version                    Prints version information                 
+        --batch                      Plain text for scripts and CI. No colors,  
+                                     hyperlinks, progress output, or update     
+                                     check. Emojis are still shown              
     -p, --path                       Optional base directory for *.trx files    
                                      discovery. Defaults to current directory   
     -o, --output                     Include test output                        

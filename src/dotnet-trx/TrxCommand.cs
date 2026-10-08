@@ -42,6 +42,10 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
         [CommandOption("--version")]
         public bool Version { get; init; }
 
+        [Description("Plain text for scripts and CI. No colors, hyperlinks, progress output, or update check. Emojis are still shown.")]
+        [CommandOption("--batch")]
+        public bool Batch { get; set; }
+
         [Description("Optional base directory for *.trx files discovery. Defaults to current directory.")]
         [CommandOption("-p|--path")]
         public string? Path { get; set; }
@@ -148,12 +152,19 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
 
         var results = new List<XElement>();
 
-        Status().Start("Discovering test results...", ctx =>
+        // Batch mode skips the status spinner entirely. The non-interactive fallback
+        // would still print each status line, which is what scripts and CI logs need to avoid.
+        if (settings.Batch)
+            Discover(null);
+        else
+            Status().Start("Discovering test results...", ctx => Discover(message => ctx.Status = message));
+
+        void Discover(Action<string>? status)
         {
             // Process from newest files to oldest so that newest result we find (by test id) is the one we keep
             foreach (var trx in Directory.EnumerateFiles(path, "*.trx", search).OrderByDescending(File.GetLastWriteTime))
             {
-                ctx.Status($"Discovering test results in {Path.GetFileName(trx).EscapeMarkup()}...");
+                status?.Invoke($"Discovering test results in {Path.GetFileName(trx).EscapeMarkup()}...");
                 using var file = File.OpenRead(trx);
                 // Clears namespaces
                 var doc = HtmlDocument.Load(file, new HtmlReaderSettings { CaseFolding = Sgml.CaseFolding.None });
@@ -166,9 +177,9 @@ public partial class TrxCommand : Command<TrxCommand.TrxSettings>
                 }
             }
 
-            ctx.Status("Sorting tests by name...");
+            status?.Invoke("Sorting tests by name...");
             results.Sort(new Comparison<XElement>((x, y) => x.Attribute("testName")!.Value.CompareTo(y.Attribute("testName")!.Value)));
-        });
+        }
 
         foreach (var result in results)
         {

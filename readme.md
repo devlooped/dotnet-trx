@@ -13,6 +13,12 @@ Pretty-print test results in TRX format.
 
 Typical usage: `dotnet test --logger trx; trx` (optionally with `--output`).
 
+For scripts, CI logs, or piping to a file, pass `--batch`. Output is plain text: no colors, hyperlinks, or progress updates, and the NuGet update check is skipped.
+
+```shell
+trx --batch
+```
+
 It automatically integrates with GitHub Actions by appending a pull request comment with the results too.
 Set up workflow with:
 
@@ -40,6 +46,9 @@ OPTIONS:
                           DEFAULT                                               
     -h, --help                       Prints help information                    
         --version                    Prints version information                 
+        --batch                      Plain text for scripts and CI. No colors,  
+                                     hyperlinks, progress output, or update     
+                                     check. Emojis are still shown              
     -p, --path                       Optional base directory for *.trx files    
                                      discovery. Defaults to current directory   
     -o, --output                     Include test output                        

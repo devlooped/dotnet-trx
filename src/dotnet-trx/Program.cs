@@ -11,6 +11,18 @@ using NuGet.Versioning;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
+// Scripts and CI pass --batch for plain text. Capabilities are fixed up front so
+// help, version output and results all skip ANSI colors, hyperlinks and spinners.
+var batch = args.Contains("--batch");
+if (batch)
+{
+    var capabilities = AnsiConsole.Profile.Capabilities;
+    capabilities.Ansi = false;
+    capabilities.ColorSystem = ColorSystem.NoColors;
+    capabilities.Links = false;
+    capabilities.Interactive = false;
+}
+
 var app = new CommandApp<TrxCommand>();
 
 // Alias -? to -h for help
@@ -23,7 +35,7 @@ if (args.Contains("--debug"))
 app.Configure(config =>
 {
     config.SetApplicationName(ThisAssembly.Project.ToolCommandName);
-    if (Environment.GetEnvironmentVariables().Contains("NO_COLOR"))
+    if (batch || Environment.GetEnvironmentVariables().Contains("NO_COLOR"))
         config.Settings.HelpProviderStyles = null;
 });
 
@@ -51,6 +63,10 @@ return exit;
 
 static async Task<string[]> CheckUpdates(string[] args)
 {
+    // Separate from the -u/--unattended scan below so that flag can change independently.
+    if (args.Contains("--batch"))
+        return [];
+
     if (args.Contains("-u") || args.Contains("--unattended"))
         return [];
 
