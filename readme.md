@@ -31,6 +31,20 @@ And view results in an automatic pull request comment like:
 
 > NOTE: this behavior is triggered by the presence of the `GITHUB_REF_NAME` and `CI` environment variables.
 
+--only-latest - Only use the most recently modified TRX file:
+
+trx --only-latest
+
+
+--only-files - Specify specific TRX files to include (reads all files until the next -- flag):
+
+trx --only-files test1.trx test2.trx
+
+--only-tests - Specify one or more tests (until next -- flag) that are the only tests included in the output report rather than all the tests:
+
+trx --only-tests Test1 Test2
+The --only-files option supports both absolute and relative paths. Relative paths are first tried against the trx directory, then fall back to the current working directory.
+
 <!-- include src/dotnet-trx/help.md -->
 ```shell
 USAGE:
