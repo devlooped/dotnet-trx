@@ -25,7 +25,7 @@
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
     <PackageReference Include="NuGet.Protocol" Version="7.9.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.51.1" />
-    <PackageReference Include="System.Formats.Asn1" Version="10.0.12" />
+    <PackageReference Include="System.Formats.Asn1" Version="10.0.13" />
     <PackageReference Include="ThisAssembly.Git" Version="2.1.5" PrivateAssets="all" />
     <PackageReference Include="ThisAssembly.Project" Version="2.1.5" PrivateAssets="all" />
   </ItemGroup>
